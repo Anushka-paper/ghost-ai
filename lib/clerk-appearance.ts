@@ -1,0 +1,35 @@
+import { dark } from "@clerk/ui/themes"
+
+export const clerkAppearance = {
+  baseTheme: dark,
+  elements: {
+    card: "font-sans",
+    footer: "font-sans",
+    formButtonPrimary: "font-sans",
+    formFieldInput: "font-sans",
+    headerSubtitle: "font-sans",
+    headerTitle: "font-sans",
+    rootBox: "font-sans",
+    socialButtonsBlockButton: "font-sans",
+  },
+  variables: {
+    borderRadius: "var(--radius)",
+    colorBackground: "var(--bg-surface)",
+    colorBorder: "var(--border-default)",
+    colorDanger: "var(--state-error)",
+    colorForeground: "var(--text-primary)",
+    colorInput: "var(--bg-subtle)",
+    colorInputForeground: "var(--text-primary)",
+    colorModalBackdrop: "color-mix(in srgb, var(--bg-base) 76%, transparent)",
+    colorMuted: "var(--bg-subtle)",
+    colorMutedForeground: "var(--text-muted)",
+    colorPrimary: "var(--accent-primary)",
+    colorPrimaryForeground: "var(--bg-base)",
+    colorRing: "var(--accent-primary)",
+    colorShadow: "var(--bg-base)",
+    colorSuccess: "var(--state-success)",
+    colorWarning: "var(--state-warning)",
+    fontFamily: "var(--font-geist-sans), sans-serif",
+    fontFamilyButtons: "var(--font-geist-sans), sans-serif",
+  },
+}

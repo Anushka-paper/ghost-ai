@@ -1,0 +1,1 @@
+when i open http://localhost:3000 it somehow opens http://localhost:3000/editor and shows error 404
