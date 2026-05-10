@@ -7,7 +7,7 @@ function routePathFromEnv(value: string | undefined, fallback: string) {
 
   try {
     const pathname = new URL(value).pathname
-    return pathname === "/" ? pathname : pathname.replace(/\/$/, "")
+    return pathname === "/" ? fallback : pathname.replace(/\/$/, "")
   } catch {
     return value.startsWith("/") ? value.replace(/\/$/, "") : fallback
   }

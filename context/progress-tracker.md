@@ -8,7 +8,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Goal
 
-- Resolve the current issue where authenticated users redirect from `/` to missing `/editor` and see a 404.
+- Implement the next feature spec.
 
 ## Completed
 

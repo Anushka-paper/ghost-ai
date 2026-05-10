@@ -137,6 +137,7 @@
 }
 
 @layer components {
+  /* Clerk user-menu styling (@clerk/nextjs v5+). Tightly coupled to Clerk's DOM structure; re-validate selectors when upgrading. */
   .cl-userButtonPopoverCard {
     background-color: var(--bg-surface) !important;
     border-color: var(--border-default) !important;
