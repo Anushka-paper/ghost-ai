@@ -45,6 +45,20 @@ Update this file whenever the current phase, active feature, or implementation s
 - Auth menu fix:
   - Added Clerk's built-in `signOut` action to the editor navbar `UserButton` menu.
   - Added global Clerk user-menu color overrides so dark-mode popover actions remain readable.
+- Project dialogs from `context/feature-specs/04-project-dialogs.md`:
+  - Added editor home screen with heading, description, and New Project button.
+  - Created `hooks/useProjectDialogs.ts` to manage dialog, form, and loading state.
+  - Created `components/editor/project-dialogs.tsx` with Create, Rename, and Delete dialogs.
+  - Added project name input with live slug preview in Create dialog.
+  - Added prefilled name input and auto-focus in Rename dialog.
+  - Added destructive confirmation in Delete dialog.
+  - Updated `components/editor/project-sidebar.tsx` to display mock projects with owned/shared tabs.
+  - Added project item actions (rename/delete) for owned projects only, hidden for shared.
+  - Added mobile backdrop scrim and close-on-tap-outside behavior.
+  - Wired editor home New Project button → Create dialog.
+  - Wired sidebar New Project button → Create dialog.
+  - Wired sidebar project actions to appropriate dialogs.
+  - Created `lib/mock-projects.ts` with mock project data (no API/persistence yet).
 
 ## In Progress
 
@@ -52,7 +66,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- Implement the next feature spec.
+- Implement the collaborative canvas feature.
 
 ## Open Questions
 
