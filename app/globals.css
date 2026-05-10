@@ -135,3 +135,25 @@
     @apply bg-base text-copy-primary;
   }
 }
+
+@layer components {
+  /* Clerk user-menu styling (@clerk/nextjs v5+). Tightly coupled to Clerk's DOM structure; re-validate selectors when upgrading. */
+  .cl-userButtonPopoverCard {
+    background-color: var(--bg-surface) !important;
+    border-color: var(--border-default) !important;
+    color: var(--text-primary) !important;
+  }
+
+  .cl-userButtonPopoverActionButton,
+  .cl-userButtonPopoverActionButtonText,
+  .cl-userButtonPopoverActionButtonIcon {
+    color: var(--text-secondary) !important;
+  }
+
+  .cl-userButtonPopoverActionButton:hover,
+  .cl-userButtonPopoverActionButton:hover .cl-userButtonPopoverActionButtonText,
+  .cl-userButtonPopoverActionButton:hover .cl-userButtonPopoverActionButtonIcon {
+    background-color: var(--bg-subtle) !important;
+    color: var(--text-primary) !important;
+  }
+}

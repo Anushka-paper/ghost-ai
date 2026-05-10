@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Editor shell complete
+- Editor route fix complete
 
 ## Current Goal
 
-- Choose the next feature unit from the feature specs.
+- Implement the next feature spec.
 
 ## Completed
 
@@ -24,6 +24,27 @@ Update this file whenever the current phase, active feature, or implementation s
   - Added `components/editor/project-sidebar.tsx` as a floating slide-in panel that does not push page content.
   - Added sidebar header with close action, My Projects and Shared tabs, empty placeholder states, and full-width New Project action.
   - Confirmed existing dialog primitives support title, description, and footer action composition for future editor dialogs without building dialog instances.
+- Auth from `context/feature-specs/03-auth.md`:
+  - Installed `@clerk/ui`.
+  - Added Clerk dark-theme appearance overrides using Ghost AI CSS variables.
+  - Wrapped the root layout with `ClerkProvider`.
+  - Added minimal two-panel sign-in and sign-up pages using Clerk components.
+  - Added root `proxy.ts` with public auth routes and default protection for all other routes.
+  - Updated `/` to redirect authenticated users to `/editor` and unauthenticated users to `/sign-in`.
+  - Added Clerk `UserButton` to the editor navbar right section.
+- Auth UI refinement from screenshot feedback:
+  - Updated the auth page shell to use a 50/50 desktop split.
+  - Added a brand-tinted left panel using existing Ghost AI tokens.
+  - Added compact logo, tagline, feature rows, and footer copy to the left panel.
+  - Moved `ClerkProvider` inside the document body so Clerk surfaces inherit Geist font variables.
+  - Added Clerk appearance element font hooks and font-family fallbacks aligned with the UI guidelines.
+- Current issue fix from `context/current-issues.md`:
+  - Added a protected `/editor` route so authenticated root redirects no longer land on a 404.
+  - Added `components/editor/editor-shell.tsx` to compose the editor navbar and project sidebar with local sidebar state.
+  - Added a minimal canvas placeholder until the collaborative canvas feature is implemented.
+- Auth menu fix:
+  - Added Clerk's built-in `signOut` action to the editor navbar `UserButton` menu.
+  - Added global Clerk user-menu color overrides so dark-mode popover actions remain readable.
 
 ## In Progress
 
@@ -48,3 +69,7 @@ Update this file whenever the current phase, active feature, or implementation s
 - `npx.cmd tsc --noEmit` passes.
 - `npm.cmd run build` passes when network access is available for `next/font` Google font fetching.
 - Completed `context/feature-specs/02-editor.md` implementation.
+- Completed `context/feature-specs/03-auth.md` implementation.
+- Resolved `context/current-issues.md`: `/editor` now exists for authenticated root redirects.
+- Added explicit Clerk sign-out action to the editor user menu.
+- Fixed Clerk user-menu action contrast in dark mode.
