@@ -4,7 +4,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Editor route fix complete
+- Prisma models and client setup complete
 
 ## Current Goal
 
@@ -59,6 +59,13 @@ Update this file whenever the current phase, active feature, or implementation s
   - Wired sidebar New Project button → Create dialog.
   - Wired sidebar project actions to appropriate dialogs.
   - Created `lib/mock-projects.ts` with mock project data (no API/persistence yet).
+- Prisma models and client setup from `context/feature-specs/05-prisma.md`:
+  - Added `Project` model with owner ID (Clerk), name, description, status enum (DRAFT, ARCHIVED), canvasJsonPath, timestamps, and indexes on owner ID and creation date.
+  - Added `ProjectCollaborator` model with project relation (cascade delete), collaborator email, creation timestamp, unique constraint on project/email, and indexes on email and project/date.
+  - Created `lib/prisma.ts` as cached singleton with branching logic: Accelerate for `prisma+postgres://` URLs, otherwise direct `@prisma/adapter-pg`.
+  - Ran `prisma migrate dev --name init` successfully.
+  - Generated Prisma Client to `app/generated/prisma`.
+  - `npm run build` passes.
 
 ## In Progress
 
@@ -87,3 +94,6 @@ Update this file whenever the current phase, active feature, or implementation s
 - Resolved `context/current-issues.md`: `/editor` now exists for authenticated root redirects.
 - Added explicit Clerk sign-out action to the editor user menu.
 - Fixed Clerk user-menu action contrast in dark mode.
+- Prisma migration `20260512112941_init` created and applied successfully.
+- Prisma Client generated to `app/generated/prisma`.
+- `npm run build` passes after Prisma setup.
