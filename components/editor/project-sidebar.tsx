@@ -1,19 +1,26 @@
 "use client"
 
-import { Plus, X, MoreVertical } from "lucide-react"
-import { useState, useRef, useEffect } from "react"
+import { Pencil, Plus, Trash2, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
-import { MOCK_PROJECTS } from "@/lib/mock-projects"
+
+interface Project {
+  id: string
+  name: string
+  description?: string | null
+  ownerId: string
+}
 
 interface ProjectSidebarProps {
+  ownedProjects: Project[]
+  sharedProjects: Project[]
   isOpen: boolean
   onClose: () => void
   onOpenCreateDialog: () => void
   onOpenRenameDialog: (projectId: string, currentName: string) => void
-  onOpenDeleteDialog: (projectId: string) => void
+  onOpenDeleteDialog: (projectId: string, projectName: string) => void
   className?: string
 }
 
@@ -36,24 +43,8 @@ function ProjectItem({
   name: string
   owned: boolean
   onRename: (projectId: string, name: string) => void
-  onDelete: (projectId: string) => void
+  onDelete: (projectId: string, name: string) => void
 }) {
-  const [showActions, setShowActions] = useState(false)
-  const actionsRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!showActions) return
-
-    const handleClickOutside = (event: MouseEvent) => {
-      if (actionsRef.current && !actionsRef.current.contains(event.target as Node)) {
-        setShowActions(false)
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showActions])
-
   return (
     <div className="group relative flex items-center justify-between rounded-lg px-3 py-2 hover:bg-subtle">
       <div className="flex-1 truncate">
@@ -62,70 +53,32 @@ function ProjectItem({
         </div>
       </div>
       {owned && (
-        <>
+        <div className="ml-2 flex shrink-0 items-center gap-1">
           <button
-            onClick={() => setShowActions(!showActions)}
-            className="ml-2 rounded p-1 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-subtle"
-            aria-label="Project actions"
-            aria-expanded={showActions}
-            aria-controls={`actions-${projectId}`}
+            type="button"
+            onClick={() => onRename(projectId, name)}
+            className="rounded p-1 text-copy-secondary hover:bg-subtle hover:text-copy-primary"
+            aria-label={`Rename ${name}`}
           >
-            <MoreVertical className="h-4 w-4 text-copy-secondary" aria-hidden="true" />
+            <Pencil className="h-4 w-4" aria-hidden="true" />
           </button>
-          {showActions && (
-            <div
-              ref={actionsRef}
-              id={`actions-${projectId}`}
-              className="absolute right-0 top-full mt-1 space-y-1 rounded-lg border border-surface-border bg-surface p-1 shadow-lg z-50"
-              role="menu"
-            >
-              <button
-                role="menuitem"
-                onClick={() => {
-                  onRename(projectId, name)
-                  setShowActions(false)
-                }}
-                className="block w-full whitespace-nowrap rounded px-3 py-1.5 text-left text-sm text-copy-secondary hover:bg-subtle hover:text-copy-primary"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    onRename(projectId, name)
-                    setShowActions(false)
-                  } else if (e.key === 'Escape') {
-                    setShowActions(false)
-                  }
-                }}
-              >
-                Rename
-              </button>
-              <button
-                role="menuitem"
-                onClick={() => {
-                  onDelete(projectId)
-                  setShowActions(false)
-                }}
-                className="block w-full whitespace-nowrap rounded px-3 py-1.5 text-left text-sm text-state-error hover:bg-subtle"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault()
-                    onDelete(projectId)
-                    setShowActions(false)
-                  } else if (e.key === 'Escape') {
-                    setShowActions(false)
-                  }
-                }}
-              >
-                Delete
-              </button>
-            </div>
-          )}
-        </>
+          <button
+            type="button"
+            onClick={() => onDelete(projectId, name)}
+            className="rounded p-1 text-state-error hover:bg-subtle"
+            aria-label={`Delete ${name}`}
+          >
+            <Trash2 className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </div>
       )}
     </div>
   )
 }
 
 export function ProjectSidebar({
+  ownedProjects,
+  sharedProjects,
   isOpen,
   onClose,
   onOpenCreateDialog,
@@ -133,8 +86,6 @@ export function ProjectSidebar({
   onOpenDeleteDialog,
   className,
 }: ProjectSidebarProps) {
-  const ownedProjects = MOCK_PROJECTS.filter((p) => p.owned)
-  const sharedProjects = MOCK_PROJECTS.filter((p) => !p.owned)
 
   return (
     <>
@@ -182,7 +133,7 @@ export function ProjectSidebar({
                     key={project.id}
                     projectId={project.id}
                     name={project.name}
-                    owned={project.owned}
+                    owned={true}
                     onRename={onOpenRenameDialog}
                     onDelete={onOpenDeleteDialog}
                   />
@@ -201,7 +152,7 @@ export function ProjectSidebar({
                     key={project.id}
                     projectId={project.id}
                     name={project.name}
-                    owned={project.owned}
+                    owned={false}
                     onRename={onOpenRenameDialog}
                     onDelete={onOpenDeleteDialog}
                   />
