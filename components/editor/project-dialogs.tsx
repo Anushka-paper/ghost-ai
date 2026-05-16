@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { generateRoomId } from '@/lib/id-utils'
 
 interface ProjectDialogsProps {
   dialogType: 'create' | 'rename' | 'delete' | null
@@ -17,6 +18,7 @@ interface ProjectDialogsProps {
   currentName?: string
   formName: string
   isLoading: boolean
+  error?: string | null
   onNameChange: (name: string) => void
   onClose: () => void
   onSubmit: () => void
@@ -36,16 +38,23 @@ export function ProjectDialogs({
   currentName,
   formName,
   isLoading,
+  error,
   onNameChange,
   onClose,
   onSubmit,
 }: ProjectDialogsProps) {
   const isOpen = dialogType !== null
   const slug = slugify(formName)
+  const roomId = formName ? generateRoomId(formName) : ''
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onClose()
+    }
+  }
 
   return (
     <>
-      <Dialog open={isOpen && dialogType === 'create'} onOpenChange={onClose}>
+      <Dialog open={isOpen && dialogType === 'create'} onOpenChange={handleOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create a new project</DialogTitle>
@@ -74,6 +83,19 @@ export function ProjectDialogs({
                 <div className="text-sm text-copy-secondary">{slug || '-'}</div>
               </div>
             )}
+            {formName && (
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-copy-muted">
+                  Room ID
+                </label>
+                <div className="text-sm text-copy-secondary font-mono">{roomId}</div>
+              </div>
+            )}
+            {error && (
+              <div className="rounded-lg bg-state-error/10 px-3 py-2 text-sm text-state-error">
+                {error}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={onClose} disabled={isLoading}>
@@ -89,7 +111,7 @@ export function ProjectDialogs({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isOpen && dialogType === 'rename'} onOpenChange={onClose}>
+      <Dialog open={isOpen && dialogType === 'rename'} onOpenChange={handleOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Rename project</DialogTitle>
@@ -99,9 +121,7 @@ export function ProjectDialogs({
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="rename-input" className="text-sm font-medium text-copy-primary">
-                New name
-              </label>
+              
               <Input
                 id="rename-input"
                 value={formName}
@@ -115,6 +135,11 @@ export function ProjectDialogs({
                 }}
               />
             </div>
+            {error && (
+              <div className="rounded-lg bg-state-error/10 px-3 py-2 text-sm text-state-error">
+                {error}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={onClose} disabled={isLoading}>
@@ -130,7 +155,7 @@ export function ProjectDialogs({
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isOpen && dialogType === 'delete'} onOpenChange={onClose}>
+      <Dialog open={isOpen && dialogType === 'delete'} onOpenChange={handleOpenChange}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete project</DialogTitle>

@@ -1,40 +1,35 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { EditorNavbar } from "@/components/editor/editor-navbar"
 import { ProjectSidebar } from "@/components/editor/project-sidebar"
 import { ProjectDialogs } from "@/components/editor/project-dialogs"
-import { useProjectDialogs } from "@/hooks/useProjectDialogs"
+import { useProjectActions } from "@/hooks/useProjectActions"
 
-export function EditorShell() {
+interface Project {
+  id: string
+  name: string
+  description?: string | null
+  ownerId: string
+}
+
+interface EditorShellProps {
+  ownedProjects: Project[]
+  sharedProjects: Project[]
+}
+
+export function EditorShell({ ownedProjects, sharedProjects }: EditorShellProps) {
   const [isProjectSidebarOpen, setIsProjectSidebarOpen] = useState(true)
-  const dialogManager = useProjectDialogs()
-  const submitTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const projectActions = useProjectActions()
 
   useEffect(() => {
     return () => {
-      if (submitTimeoutRef.current) {
-        clearTimeout(submitTimeoutRef.current)
-      }
+      projectActions.cleanup()
     }
-  }, [])
-
-  const handleDialogSubmit = () => {
-    dialogManager.setFormLoading(true)
-    // Mock delay - in production, replace with actual API call
-    submitTimeoutRef.current = setTimeout(() => {
-      try {
-        // Simulate form submission
-        dialogManager.closeDialog()
-      } finally {
-        dialogManager.setFormLoading(false)
-      }
-      submitTimeoutRef.current = null
-    }, 500)
-  }
+  }, [projectActions])
 
   return (
     <div className="flex min-h-screen flex-col bg-base text-copy-primary">
@@ -45,11 +40,13 @@ export function EditorShell() {
 
       <main className="relative min-h-0 flex-1 overflow-hidden">
         <ProjectSidebar
+          ownedProjects={ownedProjects}
+          sharedProjects={sharedProjects}
           isOpen={isProjectSidebarOpen}
           onClose={() => setIsProjectSidebarOpen(false)}
-          onOpenCreateDialog={dialogManager.openCreateDialog}
-          onOpenRenameDialog={dialogManager.openRenameDialog}
-          onOpenDeleteDialog={dialogManager.openDeleteDialog}
+          onOpenCreateDialog={projectActions.openCreateDialog}
+          onOpenRenameDialog={projectActions.openRenameDialog}
+          onOpenDeleteDialog={projectActions.openDeleteDialog}
         />
 
         <div className="flex h-full min-h-[calc(100vh-3.5rem)] flex-col items-center justify-center bg-base px-6">
@@ -62,7 +59,7 @@ export function EditorShell() {
                 Start a new architecture workspace, or choose a project from the sidebar.
               </p>
             </div>
-            <Button onClick={dialogManager.openCreateDialog} size="lg">
+            <Button onClick={projectActions.openCreateDialog} size="lg">
               <Plus className="h-4 w-4" aria-hidden="true" />
               New Project
             </Button>
@@ -71,14 +68,15 @@ export function EditorShell() {
       </main>
 
       <ProjectDialogs
-        dialogType={dialogManager.dialog.type}
-        projectId={dialogManager.dialog.projectId}
-        currentName={dialogManager.dialog.projectName || ''}
-        formName={dialogManager.form.name}
-        isLoading={dialogManager.isLoading}
-        onNameChange={dialogManager.updateFormName}
-        onClose={dialogManager.closeDialog}
-        onSubmit={handleDialogSubmit}
+        dialogType={projectActions.dialog.type}
+        projectId={projectActions.dialog.projectId}
+        currentName={projectActions.dialog.projectName}
+        formName={projectActions.form.name}
+        isLoading={projectActions.isLoading}
+        error={projectActions.error}
+        onNameChange={projectActions.updateFormName}
+        onClose={projectActions.closeDialog}
+        onSubmit={projectActions.handleSubmit}
       />
     </div>
   )
