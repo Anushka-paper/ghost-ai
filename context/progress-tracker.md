@@ -4,7 +4,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Workspace navigation implementation pending. All three foundation specs (Prisma, APIs, editor home wiring) are complete and building successfully. Next: implement `/editor/[projectId]` workspace page to display individual projects and start collaborative canvas feature.
+- Share dialog implementation complete. All five foundation specs (Prisma, APIs, editor home wiring, workspace shell, share dialog) are complete and building successfully. Next: implement collaborative canvas feature.
 
 ## Current Goal
 
@@ -95,6 +95,48 @@ Update this file whenever the current phase, active feature, or implementation s
   - Replaced the project action dropdown with direct rename and delete icon buttons on owned project rows.
   - Refreshed editor project data after deleting a project from the sidebar.
   - Fixed project dialog close handling so Base UI open-change events only reset state when a dialog is actually closing.
+- Workspace shell from `context/feature-specs/08-editor-workspace-shell.md`:
+  - Created `lib/project-access.ts` with access helpers: `getCurrentUser()`, `checkProjectAccess()`, `getProjectWithAccess()`.
+  - Created `components/editor/access-denied.tsx` with centered lock icon, message, and back link.
+  - Created `components/editor/workspace-shell.tsx` with full-viewport layout including navbar, sidebars, and canvas area.
+  - Top navbar displays project name with share button and AI sidebar toggle.
+  - ProjectSidebar shows on left with current project highlighted, supports navigation to other projects.
+  - Central canvas area has dark background with placeholder message.
+  - Right sidebar placeholder for future AI chat.
+  - Created `/editor/[projectId]` page with server-side access checks.
+  - Unauthenticated users redirect to `/sign-in`.
+  - Users without project access see `AccessDenied` component.
+  - Non-existent projects show `AccessDenied`.
+  - `npm run build` passes and includes new `/editor/[projectId]` dynamic route.
+- Share dialog from `context/feature-specs/09-share-dialog.md`:
+  - Created API route `GET /api/projects/[projectId]/collaborators` to list collaborators with Clerk enrichment (display names, avatars).
+  - Created API route `POST /api/projects/[projectId]/collaborators` to invite collaborators by email (owners only).
+  - Created API route `DELETE /api/projects/[projectId]/collaborators/[email]` to remove collaborators (owners only).
+  - Created `lib/clerk-helpers.ts` with `getClerkUserByEmail()` to fetch user display name and avatar from Clerk Backend API.
+  - Created `components/editor/share-dialog.tsx` with:
+    - Copy project link button with "Copied!" feedback for all users.
+    - Invite form (owners only) to add collaborators by email.
+    - Collaborators list showing display names and avatars from Clerk (fallback to email if user not found).
+    - Remove button for each collaborator (owners only, hidden for collaborators).
+    - Read-only view for collaborators.
+  - Updated `components/editor/workspace-shell.tsx` to accept `isOwner` prop and wire Share button to open dialog.
+  - Updated `/editor/[projectId]` page to determine `isOwner` and pass to WorkspaceShell.
+  - `npm run build` passes and includes new collaborator API routes.
+- Current issue fix from `context/current-issues.md`:
+  - Fixed `ShareDialog` to compute the project link after client mount instead of reading `window.location.origin` during render.
+  - Updated Share dialog close handling so Base UI open-change events only close local state when the dialog is actually closing.
+  - Replaced raw share dialog color classes with existing Ghost AI theme tokens.
+  - Deferred collaborator fetching after dialog open to satisfy React compiler effect rules.
+  - Cleaned up small lint blockers in `AccessDenied` and `WorkspaceShell`.
+- Current issue fix from `context/current-issues.md`:
+  - Updated collaborator access checks to resolve the signed-in user's primary email from Clerk instead of relying on session claim placeholders.
+  - Normalized collaborator emails to lowercase on invite and access checks.
+  - Replaced shared-project and collaborator API placeholder email checks with real normalized email comparisons.
+  - Made collaborator removal case-insensitive.
+- Collaborator route error fix:
+  - Removed duplicated trailing catch block in `lib/clerk-helpers.ts`.
+  - Updated collaborator server action to use the current `getCurrentUser()` and `checkProjectAccess()` helpers.
+  - Replaced an `any` Prisma error catch in the collaborator route with a narrow unique-constraint guard.
 
 ## In Progress
 
@@ -102,7 +144,6 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- Implement workspace navigation to `/editor/[projectId]` to view individual projects.
 - Implement the collaborative canvas feature.
 
 ## Open Questions
@@ -143,3 +184,18 @@ Update this file whenever the current phase, active feature, or implementation s
 - Made sidebar owned-project action buttons always visible.
 - Replaced sidebar project action dropdown with direct rename/delete icon buttons.
 - Fixed controlled project dialog open handling for sidebar rename/delete actions.
+- Implemented workspace shell spec 08 with access checks, workspace layout, and `/editor/[projectId]` page.
+- Added ProjectSidebar support for currentProjectId highlighting and navigation to specific projects.
+- Access helpers created for Clerk identity lookup and project access verification (owner or collaborator).
+- Workspace page server-side validates authentication and project access before rendering.
+- Successfully builds with new `/editor/[projectId]` dynamic route included in build output.
+- Implemented share dialog spec 09 with collaborator management API routes and Clerk enrichment.
+- Added Clerk Backend API integration to fetch user display names and avatars for collaborators.
+- Share dialog supports owners: invite/remove collaborators, copy project link; collaborators: view-only access.
+- Collaborator list enriched with Clerk data (display name, avatar) with fallback to email only.
+- Built with API routes for listing, inviting, and removing collaborators with server-side owner verification.
+- Successfully builds with new `/api/projects/[projectId]/collaborators` and `/api/projects/[projectId]/collaborators/[email]` routes.
+- Fixed Share dialog runtime `window is not defined` error by guarding project-link construction from server render.
+- Verified the Share dialog runtime fix with typecheck, lint, and production build.
+- Fixed invited collaborator access by using Clerk primary email lookup and normalized collaborator email comparisons across workspace access, sidebar shared projects, and collaborator APIs.
+- Fixed collaborator route compilation and lint errors; typecheck, lint, and build pass.
