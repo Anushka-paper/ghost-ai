@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { getCurrentUser } from '@/lib/project-access';
 
 export interface Project {
   id: string;
@@ -19,15 +19,15 @@ export async function getProjectsForUser(): Promise<{
     // Lazy load prisma to avoid initialization during build
     const { prisma } = await import('@/lib/prisma');
 
-    const { userId } = await auth();
+    const user = await getCurrentUser();
 
-    if (!userId) {
+    if (!user) {
       return { ownedProjects: [], sharedProjects: [] };
     }
 
     // Get owned projects
     const ownedProjects = await prisma.project.findMany({
-      where: { ownerId: userId },
+      where: { ownerId: user.userId },
       orderBy: { createdAt: 'desc' },
     });
 
@@ -37,9 +37,8 @@ export async function getProjectsForUser(): Promise<{
         collaborators: {
           some: {
             email: {
-              // This would need the user's email from Clerk
-              // For now, we return empty shared projects
-              equals: '', // Placeholder
+              equals: user.primaryEmail,
+              mode: 'insensitive',
             },
           },
         },

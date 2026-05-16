@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { Pencil, Plus, Trash2, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -21,6 +22,7 @@ interface ProjectSidebarProps {
   onOpenCreateDialog: () => void
   onOpenRenameDialog: (projectId: string, currentName: string) => void
   onOpenDeleteDialog: (projectId: string, projectName: string) => void
+  currentProjectId?: string
   className?: string
 }
 
@@ -36,43 +38,64 @@ function ProjectItem({
   projectId,
   name,
   owned,
+  isActive,
   onRename,
   onDelete,
 }: {
   projectId: string
   name: string
   owned: boolean
+  isActive?: boolean
   onRename: (projectId: string, name: string) => void
   onDelete: (projectId: string, name: string) => void
 }) {
   return (
-    <div className="group relative flex items-center justify-between rounded-lg px-3 py-2 hover:bg-subtle">
-      <div className="flex-1 truncate">
-        <div className="w-full truncate text-left text-sm font-medium text-copy-primary">
-          {name}
+    <Link href={`/editor/${projectId}`}>
+      <div
+        className={cn(
+          "group relative flex items-center justify-between rounded-lg px-3 py-2 transition-colors",
+          isActive
+            ? "bg-accent text-accent-foreground"
+            : "hover:bg-subtle"
+        )}
+      >
+        <div className="flex-1 truncate">
+          <div className="w-full truncate text-left text-sm font-medium">
+            {name}
+          </div>
         </div>
+        {owned && (
+          <div
+            className="ml-2 flex shrink-0 items-center gap-1"
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                onRename(projectId, name)
+              }}
+              className="rounded p-1 text-copy-secondary hover:bg-subtle hover:text-copy-primary"
+              aria-label={`Rename ${name}`}
+            >
+              <Pencil className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                onDelete(projectId, name)
+              }}
+              className="rounded p-1 text-state-error hover:bg-subtle"
+              aria-label={`Delete ${name}`}
+            >
+              <Trash2 className="h-4 w-4" aria-hidden="true" />
+            </button>
+          </div>
+        )}
       </div>
-      {owned && (
-        <div className="ml-2 flex shrink-0 items-center gap-1">
-          <button
-            type="button"
-            onClick={() => onRename(projectId, name)}
-            className="rounded p-1 text-copy-secondary hover:bg-subtle hover:text-copy-primary"
-            aria-label={`Rename ${name}`}
-          >
-            <Pencil className="h-4 w-4" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            onClick={() => onDelete(projectId, name)}
-            className="rounded p-1 text-state-error hover:bg-subtle"
-            aria-label={`Delete ${name}`}
-          >
-            <Trash2 className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
-      )}
-    </div>
+    </Link>
   )
 }
 
@@ -84,6 +107,7 @@ export function ProjectSidebar({
   onOpenCreateDialog,
   onOpenRenameDialog,
   onOpenDeleteDialog,
+  currentProjectId,
   className,
 }: ProjectSidebarProps) {
 
@@ -134,6 +158,7 @@ export function ProjectSidebar({
                     projectId={project.id}
                     name={project.name}
                     owned={true}
+                    isActive={currentProjectId === project.id}
                     onRename={onOpenRenameDialog}
                     onDelete={onOpenDeleteDialog}
                   />
@@ -153,6 +178,7 @@ export function ProjectSidebar({
                     projectId={project.id}
                     name={project.name}
                     owned={false}
+                    isActive={currentProjectId === project.id}
                     onRename={onOpenRenameDialog}
                     onDelete={onOpenDeleteDialog}
                   />
