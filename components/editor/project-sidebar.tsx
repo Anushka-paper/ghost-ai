@@ -126,7 +126,7 @@ export function ProjectSidebar({
         aria-hidden={!isOpen}
         className={cn(
           "fixed left-3 top-17 z-40 flex h-[calc(100vh-5rem)] w-80 max-w-[calc(100vw-1.5rem)] flex-col rounded-2xl border border-surface-border bg-surface/95 p-4 shadow-2xl shadow-base/60 backdrop-blur transition-transform duration-200 ease-out",
-          isOpen ? "translate-x-0" : "-translate-x-[calc(100%+1.5rem)]",
+          isOpen ? "translate-x-0" : "-translate-x-[calc(100%+2rem)]",
           className
         )}
       >

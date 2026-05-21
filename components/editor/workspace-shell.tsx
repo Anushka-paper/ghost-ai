@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { ProjectSidebar } from '@/components/editor/project-sidebar';
 import { ProjectDialogs } from '@/components/editor/project-dialogs';
 import { ShareDialog } from '@/components/editor/share-dialog';
+import { Canvas } from '@/components/editor/canvas';
 import { useProjectActions } from '@/hooks/useProjectActions';
 
 interface Project {
@@ -37,9 +38,9 @@ export function WorkspaceShell({
   const projectActions = useProjectActions();
 
   return (
-    <div className="flex min-h-screen flex-col bg-ghost-900 text-ghost-50">
+    <div className="flex min-h-screen flex-col bg-base text-copy-primary">
       {/* Top Navbar */}
-      <div className="flex h-14 items-center gap-4 border-b border-ghost-800 bg-ghost-950 px-4">
+      <div className="relative z-50 flex h-14 items-center gap-4 border-b border-surface-border bg-surface px-4">
         <div className="flex flex-1 items-center gap-3">
           {/* Sidebar Toggle */}
           <Button
@@ -56,7 +57,7 @@ export function WorkspaceShell({
           </Button>
 
           {/* Project Name */}
-          <h1 className="text-sm font-semibold text-ghost-50">{projectName}</h1>
+          <h1 className="text-sm font-semibold text-copy-primary">{projectName}</h1>
         </div>
 
         {/* Navbar Actions */}
@@ -83,7 +84,7 @@ export function WorkspaceShell({
       </div>
 
       {/* Main Content */}
-      <main className="relative flex flex-1 overflow-hidden">
+      <main className="relative flex-1 overflow-hidden bg-base">
         {/* Project Sidebar */}
         <ProjectSidebar
           ownedProjects={ownedProjects}
@@ -97,29 +98,21 @@ export function WorkspaceShell({
         />
 
         {/* Canvas Area */}
-        <div className="flex flex-1 flex-col items-center justify-center bg-ghost-900">
-          <div className="max-w-md space-y-6 text-center">
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-ghost-50">
-                Canvas Coming Soon
-              </h2>
-              <p className="text-sm leading-6 text-ghost-300">
-                The collaborative canvas will be built here.
-              </p>
-            </div>
-          </div>
+        <div className="absolute inset-0">
+          <Canvas roomId={projectId} />
         </div>
 
         {/* AI Sidebar Placeholder */}
-        {isAiSidebarOpen && (
-          <div className="w-80 border-l border-ghost-800 bg-ghost-950 p-4">
-            <div className="flex h-full items-center justify-center">
-              <p className="text-sm text-ghost-400">
-                AI sidebar coming soon
-              </p>
-            </div>
+        <aside
+          aria-hidden={!isAiSidebarOpen}
+          className={`fixed right-3 top-17 z-40 flex h-[calc(100vh-5rem)] w-80 max-w-[calc(100vw-1.5rem)] flex-col rounded-2xl border border-surface-border bg-surface/95 p-4 shadow-2xl shadow-base/60 backdrop-blur transition-transform duration-200 ease-out ${
+            isAiSidebarOpen ? 'translate-x-0' : 'translate-x-[calc(100%+1.5rem)]'
+          }`}
+        >
+          <div className="flex h-full items-center justify-center">
+            <p className="text-sm text-copy-muted">AI sidebar coming soon</p>
           </div>
-        )}
+        </aside>
       </main>
 
       {/* Project Dialogs */}
