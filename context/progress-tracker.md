@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Share dialog implementation complete. All five foundation specs (Prisma, APIs, editor home wiring, workspace shell, share dialog) are complete and building successfully. Next: implement collaborative canvas feature.
+- Canvas visual and drag/drop issues fixed. Base collaborative canvas now uses Liveblocks-backed React Flow state correctly, fills the workspace as a flush dotted design surface, and supports shape panel drag/drop node creation. Next: add custom node rendering and persistence logic.
 
 ## Current Goal
 
-- Implement the next feature spec.
+- Implement the collaborative canvas feature using Liveblocks.
 
 ## Completed
 
@@ -137,6 +137,19 @@ Update this file whenever the current phase, active feature, or implementation s
   - Removed duplicated trailing catch block in `lib/clerk-helpers.ts`.
   - Updated collaborator server action to use the current `getCurrentUser()` and `checkProjectAccess()` helpers.
   - Replaced an `any` Prisma error catch in the collaborator route with a narrow unique-constraint guard.
+- Liveblocks setup from `context/feature-specs/10-liveblocks-setup.md`:
+  - Updated `liveblocks.config.ts` to define Presence with cursor position and `isThinking` boolean.
+  - Defined UserMeta with user ID, display name, avatar URL, and cursor color.
+  - Created `lib/liveblocks.ts` with cached Liveblocks node client singleton.
+  - Added `getUserCursorColor()` helper that deterministically maps user IDs to a 10-color fixed palette.
+  - Created `POST /api/liveblocks-auth` route with:
+    - Clerk authentication requirement (401 for unauthenticated).
+    - Project access verification using existing access helper (403 for unauthorized).
+    - Automatic room creation using project ID as room ID.
+    - Session token generation with user name, avatar, and cursor color.
+    - Proper error handling and status codes.
+  - Installed `@liveblocks/node` for server-side operations.
+  - `npm run build`, `npm run lint`, and `npx tsc --noEmit` all pass successfully.
 
 ## In Progress
 
@@ -144,7 +157,9 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- Implement the collaborative canvas feature.
+- Add custom node rendering for each shape type.
+- Implement node label editing.
+- Add persistence logic for canvas state to Liveblocks storage.
 
 ## Open Questions
 
@@ -199,3 +214,33 @@ Update this file whenever the current phase, active feature, or implementation s
 - Verified the Share dialog runtime fix with typecheck, lint, and production build.
 - Fixed invited collaborator access by using Clerk primary email lookup and normalized collaborator email comparisons across workspace access, sidebar shared projects, and collaborator APIs.
 - Fixed collaborator route compilation and lint errors; typecheck, lint, and build pass.
+- **Base Canvas Implementation Complete**:
+  - Installed React Flow and Liveblocks React Flow packages.
+  - Created shared canvas types in types/canvas.ts.
+  - Built client-side canvas wrapper with Liveblocks authentication and room setup.
+  - Integrated useLiveblocksFlow hook for synced collaborative state.
+  - Canvas renders with loose connections, MiniMap, Controls, and dot-pattern background.
+  - Updated workspace shell to render Canvas instead of placeholder.
+  - Updated liveblocks.config.ts with canvas_state Storage definition.
+  - **BUILD PASSES** - All routes compiled, TypeScript typecheck passes, all 11 routes available.
+- Fixed Liveblocks auth route to extract `room` parameter (sent by Liveblocks client) instead of `projectId`.
+- **Shape Panel Implementation Complete**:
+  - Created floating pill-shaped toolbar with 6 draggable shape buttons.
+  - Shapes: rectangle, diamond, circle, pill, cylinder, hexagon.
+  - Each shape has sensible default sizes for better usability.
+  - Implemented dragover/drop handling with visual feedback overlay.
+  - Screen-to-canvas coordinate conversion using React Flow's screenToFlowPosition.
+  - Custom node renderer displays nodes as bordered rectangles with centered labels.
+  - Node IDs use shape name + timestamp + counter for uniqueness.
+  - Updated canvas types to support all 6 shape types.
+  - **BUILD PASSES** - Typecheck passes, linting passes (1 pre-existing warning), all 11 routes available.
+- Current issue fix from `context/current-issues.md`:
+  - Rewired the canvas to pass `useLiveblocksFlow()` nodes, edges, and handlers directly into the controlled React Flow instance.
+  - Switched canvas-related React Flow imports to `@xyflow/react` so Liveblocks React Flow types and runtime components match.
+  - Added validated drag payload parsing and Liveblocks-backed node creation through `onNodesChange`.
+  - Added `text/plain` drag data fallback for shape panel drag/drop reliability.
+  - Removed the canvas wrapper card effect by making the canvas fill the workspace edge-to-edge with the Ghost AI base background and dotted React Flow background.
+  - Converted the AI sidebar to a fixed overlay so it floats over the canvas instead of shrinking the canvas layout.
+  - Increased the left sidebar closed transform so it fully clears the viewport when hidden.
+  - Replaced touched `ghost-*` editor layout classes with documented Ghost AI theme tokens.
+  - `npx.cmd tsc --noEmit`, `npm.cmd run lint`, and `npm.cmd run build` pass.
