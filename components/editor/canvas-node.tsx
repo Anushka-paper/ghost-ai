@@ -182,6 +182,13 @@ export function CanvasNode({ id, data, isConnecting, selected }: CanvasNodeProps
             stopCanvasInteraction(event);
             setIsEditing(true);
           }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              stopCanvasInteraction(event);
+              setIsEditing(true);
+            }
+          }}
           onMouseDown={stopCanvasInteraction}
           onPointerDown={stopCanvasInteraction}
         >

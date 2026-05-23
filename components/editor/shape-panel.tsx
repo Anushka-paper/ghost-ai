@@ -77,18 +77,19 @@ export function ShapePanel({ onShapeDragStart }: ShapePanelProps) {
   const [dragPreview, setDragPreview] = useState<DragPreview | null>(null);
   const dragImageRef = useRef<HTMLCanvasElement | null>(null);
 
-  useEffect(() => {
-    if (!dragPreview) {
-      return;
-    }
+  const isDraggingRef = useRef(false);
 
+  useEffect(() => {
     function handleWindowDragOver(event: DragEvent) {
-      setDragPreview((current) =>
-        current ? { ...current, x: event.clientX, y: event.clientY } : null
-      );
+      if (isDraggingRef.current) {
+        setDragPreview((current) =>
+          current ? { ...current, x: event.clientX, y: event.clientY } : null
+        );
+      }
     }
 
     function clearDragPreview() {
+      isDraggingRef.current = false;
       setDragPreview(null);
     }
 
@@ -101,13 +102,14 @@ export function ShapePanel({ onShapeDragStart }: ShapePanelProps) {
       window.removeEventListener('drop', clearDragPreview);
       window.removeEventListener('dragend', clearDragPreview);
     };
-  }, [dragPreview]);
+  }, []);
 
   const handleDragStart = (
     e: React.DragEvent<HTMLButtonElement>,
     shape: CanvasShape,
     size: ShapeSize
   ) => {
+    isDraggingRef.current = true;
     const shapeData = JSON.stringify({ shape, size });
     e.dataTransfer.setData('application/json', shapeData);
     e.dataTransfer.setData('text/plain', shapeData);

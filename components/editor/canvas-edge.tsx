@@ -125,6 +125,7 @@ export function CanvasEdge({
             ) : (
               <button
                 type="button"
+                aria-label={label ? `Edit label: ${label}` : 'Add label'}
                 className={`rounded-xl border px-2 py-1 text-xs shadow-lg shadow-base/30 transition-colors ${
                   label
                     ? 'border-surface-border bg-surface text-copy-secondary'
@@ -133,6 +134,13 @@ export function CanvasEdge({
                 onDoubleClick={(event) => {
                   stopCanvasInteraction(event);
                   setIsEditing(true);
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    stopCanvasInteraction(event);
+                    setIsEditing(true);
+                  }
                 }}
                 onMouseDown={stopCanvasInteraction}
                 onPointerDown={stopCanvasInteraction}

@@ -373,13 +373,12 @@ function CanvasFlowInner({ isTemplateModalOpen, onCloseTemplateModal }: { isTemp
           onNodesChange(nodes.map(n => ({ type: 'remove', id: n.id })));
           onEdgesChange(edges.map(e => ({ type: 'remove', id: e.id })));
           
-          setTimeout(() => {
-            onNodesChange(template.nodes.map(n => ({ type: 'add', item: n })));
-            onEdgesChange(template.edges.map(e => ({ type: 'add', item: e })));
-            setTimeout(() => {
-              reactFlow.fitView({ padding: 0.2, duration: 400 });
-            }, 50);
-          }, 50);
+          onNodesChange(template.nodes.map(n => ({ type: 'add', item: n })));
+          onEdgesChange(template.edges.map(e => ({ type: 'add', item: e })));
+          
+          requestAnimationFrame(() => {
+            reactFlow.fitView({ padding: 0.2, duration: 400 });
+          });
         }}
       />
     </ReactFlow>

@@ -9,8 +9,14 @@ const globalForPrisma = globalThis as unknown as {
 const connectionString = process.env.DATABASE_URL;
 
 const prismaClientSingleton = () => {
-  const pool = new Pool({ connectionString });
-  const adapter = new PrismaPg(pool);
+  if (!connectionString) {
+    console.error('DATABASE_URL must be set');
+    process.exit(1);
+  }
+
+  // The pool was being passed into PrismaPg directly in v6, but in v7 the PrismaPg adapter expects
+  // a config object. The finding notes to fix this: `new PrismaPg({ connectionString })`
+  const adapter = new PrismaPg({ connectionString });
   return new PrismaClient({ adapter });
 };
 
