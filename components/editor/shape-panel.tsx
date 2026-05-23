@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import {
   Square,
   Diamond,
@@ -9,12 +10,28 @@ import {
   Hexagon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { NodeShape } from '@/components/editor/node-shape';
+import { CanvasNodeData } from '@/types/canvas';
+
+type CanvasShape = CanvasNodeData['shape'];
+
+interface ShapeSize {
+  width: number;
+  height: number;
+}
 
 interface ShapePanelProps {
   onShapeDragStart: (
-    shape: 'rectangle' | 'circle' | 'diamond' | 'pill' | 'cylinder' | 'hexagon',
-    size: { width: number; height: number }
+    shape: CanvasShape,
+    size: ShapeSize
   ) => void;
+}
+
+interface DragPreview {
+  shape: CanvasShape;
+  size: ShapeSize;
+  x: number;
+  y: number;
 }
 
 const shapes = [
@@ -57,16 +74,58 @@ const shapes = [
 ] as const;
 
 export function ShapePanel({ onShapeDragStart }: ShapePanelProps) {
+  const [dragPreview, setDragPreview] = useState<DragPreview | null>(null);
+  const dragImageRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    if (!dragPreview) {
+      return;
+    }
+
+    function handleWindowDragOver(event: DragEvent) {
+      setDragPreview((current) =>
+        current ? { ...current, x: event.clientX, y: event.clientY } : null
+      );
+    }
+
+    function clearDragPreview() {
+      setDragPreview(null);
+    }
+
+    window.addEventListener('dragover', handleWindowDragOver);
+    window.addEventListener('drop', clearDragPreview);
+    window.addEventListener('dragend', clearDragPreview);
+
+    return () => {
+      window.removeEventListener('dragover', handleWindowDragOver);
+      window.removeEventListener('drop', clearDragPreview);
+      window.removeEventListener('dragend', clearDragPreview);
+    };
+  }, [dragPreview]);
+
   const handleDragStart = (
     e: React.DragEvent<HTMLButtonElement>,
-    shape: 'rectangle' | 'circle' | 'diamond' | 'pill' | 'cylinder' | 'hexagon',
-    size: { width: number; height: number }
+    shape: CanvasShape,
+    size: ShapeSize
   ) => {
     const shapeData = JSON.stringify({ shape, size });
     e.dataTransfer.setData('application/json', shapeData);
     e.dataTransfer.setData('text/plain', shapeData);
     e.dataTransfer.effectAllowed = 'move';
+
+    if (!dragImageRef.current) {
+      dragImageRef.current = document.createElement('canvas');
+      dragImageRef.current.width = 1;
+      dragImageRef.current.height = 1;
+    }
+
+    e.dataTransfer.setDragImage(dragImageRef.current, 0, 0);
+    setDragPreview({ shape, size, x: e.clientX, y: e.clientY });
     onShapeDragStart(shape, size);
+  };
+
+  const handleDragEnd = () => {
+    setDragPreview(null);
   };
 
   return (
@@ -80,16 +139,11 @@ export function ShapePanel({ onShapeDragStart }: ShapePanelProps) {
             className="h-9 w-9 p-0 hover:bg-subtle"
             title={label}
             draggable
+            onDragEnd={handleDragEnd}
             onDragStart={(e) =>
               handleDragStart(
                 e,
-                id as
-                  | 'rectangle'
-                  | 'circle'
-                  | 'diamond'
-                  | 'pill'
-                  | 'cylinder'
-                  | 'hexagon',
+                id,
                 size
               )
             }
@@ -98,6 +152,20 @@ export function ShapePanel({ onShapeDragStart }: ShapePanelProps) {
           </Button>
         ))}
       </div>
+      {dragPreview && (
+        <div
+          className="pointer-events-none fixed z-50"
+          style={{
+            left: dragPreview.x,
+            top: dragPreview.y,
+            width: dragPreview.size.width,
+            height: dragPreview.size.height,
+            transform: 'translate(-50%, -50%)',
+          }}
+        >
+          <NodeShape shape={dragPreview.shape} fill="#1F1F1F" preview />
+        </div>
+      )}
     </div>
   );
 }

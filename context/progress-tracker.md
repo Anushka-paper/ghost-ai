@@ -4,7 +4,7 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Canvas visual and drag/drop issues fixed. Base collaborative canvas now uses Liveblocks-backed React Flow state correctly, fills the workspace as a flush dotted design surface, and supports shape panel drag/drop node creation. Next: add custom node rendering and persistence logic.
+- Canvas ergonomics implemented. The canvas now has a bottom-left floating control bar for zoom, fit view, undo, and redo, with matching keyboard shortcuts that skip editable fields. Next: add persistence logic.
 
 ## Current Goal
 
@@ -150,6 +150,35 @@ Update this file whenever the current phase, active feature, or implementation s
     - Proper error handling and status codes.
   - Installed `@liveblocks/node` for server-side operations.
   - `npm run build`, `npm run lint`, and `npx tsc --noEmit` all pass successfully.
+- Edge behavior from `context/feature-specs/16-edge-behavior.md`:
+  - Added subtle top, right, bottom, and left connection handles to every canvas node.
+  - Added typed canvas edge data for collaborative inline labels.
+  - Created a custom `canvasEdge` renderer using smooth-step routing, rounded strokes, and arrowheads.
+  - Added widened transparent edge hit areas so edges are easier to hover, select, and double-click without thickening the visible stroke.
+  - Added edge hover and selection brightening.
+  - Added inline edge label editing with `EdgeLabelRenderer` and `getSmoothStepPath` label coordinates.
+  - Saved edge labels through the existing Liveblocks-backed edge change flow.
+  - `npx.cmd tsc --noEmit`, `npm.cmd run lint`, and `npm.cmd run build` pass.
+- Canvas ergonomics from `context/feature-specs/17-canvas-ergonomics.md`:
+  - Added a pill-shaped bottom-left canvas control bar above the shape panel.
+  - Added zoom out, fit view, zoom in, undo, and redo controls with grouped layout and a divider.
+  - Wired zoom actions to the React Flow instance with short animated transitions.
+  - Wired undo and redo to Liveblocks `useUndo`, `useRedo`, `useCanUndo`, and `useCanRedo`.
+  - Disabled undo and redo controls when no matching history action is available.
+  - Created `hooks/useKeyboardShortcuts.ts` for zoom and history keyboard shortcuts.
+  - Keyboard shortcuts skip inputs, textareas, and editable fields.
+  - Replaced the built-in React Flow controls with the custom specified control bar.
+  - `npx.cmd tsc --noEmit`, `npm.cmd run lint`, and `npm.cmd run build` pass.
+- Current issue fix from `context/current-issues.md`:
+  - Fixed `Can't reach database server at db.prisma.io:5432` by configuring Prisma Client to use the `@prisma/adapter-pg` driver adapter.
+  - Initialized a Node-Postgres (`pg`) Pool and wired it up to the Prisma client in `lib/prisma.ts`.
+  - Triggered a new build to verify that the fix resolves the connection issue, which passed successfully.
+- Starter templates library from `context/feature-specs/18-starter-template.md`:
+  - Added `components/editor/starter-templates.ts` containing 3 templates (Microservices Architecture, CI/CD Pipeline, Event-Driven System).
+  - Created `components/editor/starter-templates-modal.tsx` with a lightweight SVG preview based on node data.
+  - Wired a new "Templates" button to the editor navbar to open the modal.
+  - Connected the modal's `onImport` callback down to the canvas to clear the existing node/edge states and render the new template using `useLiveblocksFlow`.
+  - `npm.cmd run build` passes.
 
 ## In Progress
 
@@ -157,8 +186,6 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Next Up
 
-- Add custom node rendering for each shape type.
-- Implement node label editing.
 - Add persistence logic for canvas state to Liveblocks storage.
 
 ## Open Questions
@@ -244,3 +271,39 @@ Update this file whenever the current phase, active feature, or implementation s
   - Increased the left sidebar closed transform so it fully clears the viewport when hidden.
   - Replaced touched `ghost-*` editor layout classes with documented Ghost AI theme tokens.
   - `npx.cmd tsc --noEmit`, `npm.cmd run lint`, and `npm.cmd run build` pass.
+- Node shape rendering from `context/feature-specs/13-node-shape.md`:
+  - Added a reusable `NodeShape` renderer for canvas nodes and shape drag previews.
+  - Rendered rectangle, pill, and circle using CSS shapes.
+  - Rendered diamond, hexagon, and cylinder using scalable SVG shapes.
+  - Updated selected nodes to use a brighter stroke while rest-state borders remain subtle.
+  - Kept node rendering connected to existing Liveblocks-backed React Flow state.
+  - Added a cursor-following ghost preview when dragging shapes from the shape panel.
+  - Hid the native browser drag image so the custom preview is the visible drag feedback.
+  - `npx.cmd tsc --noEmit`, `npm.cmd run lint`, and `npm.cmd run build` pass.
+- Node resizing and inline label editing from `context/feature-specs/14-node-editing.md`:
+  - Added React Flow `NodeResizer` handles that appear only for selected nodes.
+  - Enforced minimum node resize dimensions.
+  - Kept resize handles subtle with dark-canvas styling.
+  - Added double-click inline label editing in the centered node label area.
+  - Added centered placeholder text when labels are empty.
+  - Rendered the editing textarea directly over the label without layout shifts.
+  - Updated labels through the existing Liveblocks-backed node change flow.
+  - Closed editing on blur or `Escape`.
+  - Prevented textarea interactions from dragging or panning the canvas.
+  - `npx.cmd tsc --noEmit`, `npm.cmd run lint`, and `npm.cmd run build` pass.
+- Node label editing refinement:
+  - Centered the active label editing textarea vertically inside the node so focused text appears in the same middle position as the read-only label.
+  - Auto-sized the textarea to its content while keeping editing interactions isolated from canvas drag and pan.
+  - `npx.cmd tsc --noEmit`, `npm.cmd run lint`, and `npm.cmd run build` pass.
+- Node color toolbar from `context/feature-specs/15-nodes-color-toolbar.md`:
+  - Added the 8 predefined node background/text color pairs from `context/ui-context.md` to `types/canvas.ts`.
+  - Added text color support to canvas node data.
+  - Added a selected-node floating color toolbar above the node.
+  - Rendered one swatch per predefined color pair with active selection styling.
+  - Added tight hover glow using each swatch's paired text color.
+  - Prevented toolbar interactions from dragging nodes or panning the canvas.
+  - Updated both node background and text color through the existing Liveblocks-backed node change flow.
+  - Kept color changes client-side with no server calls.
+  - `npx.cmd tsc --noEmit`, `npm.cmd run lint`, and `npm.cmd run build` pass.
+- Implemented `context/feature-specs/16-edge-behavior.md`; typecheck, lint, and production build pass. Lint still reports the pre-existing `share-dialog.tsx` `<img>` warning.
+- Implemented `context/feature-specs/17-canvas-ergonomics.md`; typecheck, lint, and production build pass. Lint still reports the pre-existing `share-dialog.tsx` `<img>` warning.

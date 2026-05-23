@@ -1,32 +1,48 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useMemo, useRef } from 'react';
 import {
   LiveblocksProvider,
   RoomProvider,
   ClientSideSuspense,
+  useCanRedo,
+  useCanUndo,
+  useRedo,
+  useUndo,
 } from '@liveblocks/react';
 import { useLiveblocksFlow } from '@liveblocks/react-flow';
 import {
   ReactFlow,
   Background,
   MiniMap,
-  Controls,
   useReactFlow,
   Node,
-  Edge,
+  Connection,
+  MarkerType,
   ReactFlowProvider,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { ShapePanel } from '@/components/editor/shape-panel';
 import { CanvasNode } from '@/components/editor/canvas-node';
-import { CanvasNodeData } from '@/types/canvas';
+import { CanvasEdge } from '@/components/editor/canvas-edge';
+import { CanvasControlBar } from '@/components/editor/canvas-control-bar';
+import { StarterTemplatesModal } from '@/components/editor/starter-templates-modal';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import {
+  CanvasEdge as CanvasEdgeType,
+  CanvasNodeData,
+  NodeColorPair,
+  NODE_COLORS,
+} from '@/types/canvas';
 
 interface CanvasProps {
   roomId: string;
+  isTemplateModalOpen?: boolean;
+  onCloseTemplateModal?: () => void;
 }
 
 const NODE_TYPES = { canvasNode: CanvasNode };
+const EDGE_TYPES = { canvasEdge: CanvasEdge };
 type CanvasShape = CanvasNodeData['shape'];
 
 interface DraggedShape {
@@ -69,13 +85,18 @@ function parseDraggedShape(data: string): DraggedShape | null {
   }
 }
 
-function CanvasFlowInner() {
-  const { nodes, edges, onNodesChange, onEdgesChange, onConnect, onDelete } =
-    useLiveblocksFlow<Node<CanvasNodeData>, Edge>({
+function CanvasFlowInner({ isTemplateModalOpen, onCloseTemplateModal }: { isTemplateModalOpen?: boolean, onCloseTemplateModal?: () => void }) {
+  const { nodes, edges, onNodesChange, onEdgesChange, onDelete } =
+    useLiveblocksFlow<Node<CanvasNodeData>, CanvasEdgeType>({
       suspense: true,
       storageKey: 'canvas_state',
     });
-  const { screenToFlowPosition } = useReactFlow();
+  const reactFlow = useReactFlow();
+  const { screenToFlowPosition } = reactFlow;
+  const undo = useUndo();
+  const redo = useRedo();
+  const canUndo = useCanUndo();
+  const canRedo = useCanRedo();
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const nodeCounterRef = useRef<Record<CanvasShape, number>>({
     rectangle: 0,
@@ -84,6 +105,161 @@ function CanvasFlowInner() {
     pill: 0,
     cylinder: 0,
     hexagon: 0,
+  });
+
+  const handleLabelChange = useCallback(
+    (nodeId: string, label: string) => {
+      const node = nodes.find((item) => item.id === nodeId);
+
+      if (!node) {
+        return;
+      }
+
+      onNodesChange([
+        {
+          type: 'replace',
+          id: nodeId,
+          item: {
+            ...node,
+            data: {
+              ...node.data,
+              label,
+            },
+          },
+        },
+      ]);
+    },
+    [nodes, onNodesChange]
+  );
+
+  const handleColorChange = useCallback(
+    (nodeId: string, color: NodeColorPair) => {
+      const node = nodes.find((item) => item.id === nodeId);
+
+      if (!node) {
+        return;
+      }
+
+      onNodesChange([
+        {
+          type: 'replace',
+          id: nodeId,
+          item: {
+            ...node,
+            data: {
+              ...node.data,
+              color: color.fill,
+              textColor: color.text,
+            },
+          },
+        },
+      ]);
+    },
+    [nodes, onNodesChange]
+  );
+
+  const handleEdgeLabelChange = useCallback(
+    (edgeId: string, label: string) => {
+      const edge = edges.find((item) => item.id === edgeId);
+
+      if (!edge) {
+        return;
+      }
+
+      onEdgesChange([
+        {
+          type: 'replace',
+          id: edgeId,
+          item: {
+            ...edge,
+            data: {
+              ...edge.data,
+              label,
+            },
+          },
+        },
+      ]);
+    },
+    [edges, onEdgesChange]
+  );
+
+  const renderedNodes = useMemo(
+    () =>
+      nodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          onLabelChange: handleLabelChange,
+          onColorChange: handleColorChange,
+        },
+      })),
+    [handleColorChange, handleLabelChange, nodes]
+  );
+
+  const renderedEdges = useMemo(
+    () =>
+      edges.map((edge) => ({
+        ...edge,
+        type: 'canvasEdge' as const,
+        data: {
+          ...edge.data,
+          onLabelChange: handleEdgeLabelChange,
+        },
+      })),
+    [edges, handleEdgeLabelChange]
+  );
+
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      onEdgesChange([
+        {
+          type: 'add',
+          item: {
+            ...connection,
+            id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
+            type: 'canvasEdge',
+            data: {
+              label: '',
+            },
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              color: 'var(--text-secondary)',
+            },
+          },
+        },
+      ]);
+    },
+    [onEdgesChange]
+  );
+
+  const handleZoomOut = useCallback(() => {
+    void reactFlow.zoomOut({ duration: 180 });
+  }, [reactFlow]);
+
+  const handleFitView = useCallback(() => {
+    void reactFlow.fitView({ duration: 220, padding: 0.2 });
+  }, [reactFlow]);
+
+  const handleZoomIn = useCallback(() => {
+    void reactFlow.zoomIn({ duration: 180 });
+  }, [reactFlow]);
+
+  const handleUndo = useCallback(() => {
+    if (canUndo) {
+      undo();
+    }
+  }, [canUndo, undo]);
+
+  const handleRedo = useCallback(() => {
+    if (canRedo) {
+      redo();
+    }
+  }, [canRedo, redo]);
+
+  useKeyboardShortcuts({
+    reactFlow,
+    undo: handleUndo,
+    redo: handleRedo,
   });
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
@@ -121,7 +297,8 @@ function CanvasFlowInner() {
             type: 'canvasNode',
             data: {
               label: 'Node',
-              color: '#1F1F1F',
+              color: NODE_COLORS[0].fill,
+              textColor: NODE_COLORS[0].text,
               shape: shapeData.shape,
             },
             position: screenToFlowPosition({
@@ -142,11 +319,11 @@ function CanvasFlowInner() {
   return (
     <ReactFlow
       className="bg-base"
-      nodes={nodes}
-      edges={edges}
+      nodes={renderedNodes}
+      edges={renderedEdges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
+      onConnect={handleConnect}
       onDelete={onDelete}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -155,6 +332,14 @@ function CanvasFlowInner() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       connectionMode={'loose' as any}
       nodeTypes={NODE_TYPES}
+      edgeTypes={EDGE_TYPES}
+      defaultEdgeOptions={{
+        type: 'canvasEdge',
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          color: 'var(--text-secondary)',
+        },
+      }}
     >
       {isDraggingOver && (
         <div className="pointer-events-none absolute inset-0 z-10 bg-accent-dim" />
@@ -171,26 +356,50 @@ function CanvasFlowInner() {
           overflow: 'hidden',
         }}
       />
-      <Controls />
+      <CanvasControlBar
+        canUndo={canUndo}
+        canRedo={canRedo}
+        onZoomOut={handleZoomOut}
+        onFitView={handleFitView}
+        onZoomIn={handleZoomIn}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+      />
       <ShapePanel onShapeDragStart={() => {}} />
+      <StarterTemplatesModal 
+        isOpen={!!isTemplateModalOpen} 
+        onClose={() => onCloseTemplateModal?.()} 
+        onImport={(template) => {
+          onNodesChange(nodes.map(n => ({ type: 'remove', id: n.id })));
+          onEdgesChange(edges.map(e => ({ type: 'remove', id: e.id })));
+          
+          setTimeout(() => {
+            onNodesChange(template.nodes.map(n => ({ type: 'add', item: n })));
+            onEdgesChange(template.edges.map(e => ({ type: 'add', item: e })));
+            setTimeout(() => {
+              reactFlow.fitView({ padding: 0.2, duration: 400 });
+            }, 50);
+          }, 50);
+        }}
+      />
     </ReactFlow>
   );
 }
 
-function CanvasFlow() {
+function CanvasFlow({ isTemplateModalOpen, onCloseTemplateModal }: { isTemplateModalOpen?: boolean, onCloseTemplateModal?: () => void }) {
   return (
     <ReactFlowProvider>
-      <CanvasFlowInner />
+      <CanvasFlowInner isTemplateModalOpen={isTemplateModalOpen} onCloseTemplateModal={onCloseTemplateModal} />
     </ReactFlowProvider>
   );
 }
 
-function CanvasContentInner() {
-  return <CanvasFlow />;
+function CanvasContentInner({ isTemplateModalOpen, onCloseTemplateModal }: { isTemplateModalOpen?: boolean, onCloseTemplateModal?: () => void }) {
+  return <CanvasFlow isTemplateModalOpen={isTemplateModalOpen} onCloseTemplateModal={onCloseTemplateModal} />;
 }
 
-function CanvasContent() {
-  return <CanvasContentInner />;
+function CanvasContent({ isTemplateModalOpen, onCloseTemplateModal }: { isTemplateModalOpen?: boolean, onCloseTemplateModal?: () => void }) {
+  return <CanvasContentInner isTemplateModalOpen={isTemplateModalOpen} onCloseTemplateModal={onCloseTemplateModal} />;
 }
 
 function CanvasLoading() {
@@ -204,7 +413,7 @@ function CanvasLoading() {
   );
 }
 
-export function Canvas({ roomId }: CanvasProps) {
+export function Canvas({ roomId, isTemplateModalOpen, onCloseTemplateModal }: CanvasProps) {
   return (
     <LiveblocksProvider authEndpoint="/api/liveblocks-auth" throttle={16}>
       <RoomProvider
@@ -217,7 +426,7 @@ export function Canvas({ roomId }: CanvasProps) {
         initialStorage={{} as any}
       >
         <ClientSideSuspense fallback={<CanvasLoading />}>
-          <CanvasContent />
+          <CanvasContent isTemplateModalOpen={isTemplateModalOpen} onCloseTemplateModal={onCloseTemplateModal} />
         </ClientSideSuspense>
       </RoomProvider>
     </LiveblocksProvider>
