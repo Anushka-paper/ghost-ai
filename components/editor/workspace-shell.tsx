@@ -35,6 +35,7 @@ export function WorkspaceShell({
   const [isProjectSidebarOpen, setIsProjectSidebarOpen] = useState(true);
   const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
   const projectActions = useProjectActions();
 
   return (
@@ -62,6 +63,14 @@ export function WorkspaceShell({
 
         {/* Navbar Actions */}
         <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-9 px-3 text-xs font-medium"
+            onClick={() => setIsTemplateModalOpen(true)}
+          >
+            Templates
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -99,7 +108,11 @@ export function WorkspaceShell({
 
         {/* Canvas Area */}
         <div className="absolute inset-0">
-          <Canvas roomId={projectId} />
+          <Canvas 
+            roomId={projectId} 
+            isTemplateModalOpen={isTemplateModalOpen} 
+            onCloseTemplateModal={() => setIsTemplateModalOpen(false)} 
+          />
         </div>
 
         {/* AI Sidebar Placeholder */}
