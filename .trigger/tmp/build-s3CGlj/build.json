@@ -1,0 +1,104 @@
+{
+  "build": {
+  },
+  "cliPackageVersion": "4.4.6",
+  "config": {
+    "dirs": [
+      "trigger"
+    ],
+    "project": "proj_rwvgmluxvgvzcftcaloc"
+  },
+  "configPath": "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\Desktop\\summer_project\\ghost-ai\\trigger.config.mjs",
+  "contentHash": "2569dee27408126ce2a2ba4bdf2a38c6",
+  "customConditions": [
+  ],
+  "deploy": {
+    "env": {
+    }
+  },
+  "environment": "dev",
+  "externals": [
+    {
+      "name": "import-in-the-middle",
+      "version": "1.11.0"
+    }
+  ],
+  "files": [
+    {
+      "entry": "trigger/example.ts",
+      "out": "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\Desktop\\summer_project\\ghost-ai\\trigger\\example.mjs"
+    }
+  ],
+  "indexWorkerEntryPoint": "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\AppData\\Local\\npm-cache\\_npx\\f51a09bd0abf5f10\\node_modules\\trigger.dev\\dist\\esm\\entryPoints\\dev-index-worker.mjs",
+  "otelImportHook": {
+    "include": [
+    ]
+  },
+  "outputHashes": {
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\AppData\\Local\\npm-cache\\_npx\\f51a09bd0abf5f10\\node_modules\\trigger.dev\\dist\\esm\\entryPoints\\dev-index-worker.mjs": "Xpevgbdi+6U",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\AppData\\Local\\npm-cache\\_npx\\f51a09bd0abf5f10\\node_modules\\trigger.dev\\dist\\esm\\entryPoints\\dev-index-worker.mjs.map": "QMlN+ONAmVU",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\AppData\\Local\\npm-cache\\_npx\\f51a09bd0abf5f10\\node_modules\\trigger.dev\\dist\\esm\\entryPoints\\dev-run-worker.mjs": "hA8TEHGFR4A",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\AppData\\Local\\npm-cache\\_npx\\f51a09bd0abf5f10\\node_modules\\trigger.dev\\dist\\esm\\entryPoints\\dev-run-worker.mjs.map": "OUA8Mr2nozs",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\Desktop\\summer_project\\ghost-ai\\trigger.config.mjs": "89fGkPygkcM",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\Desktop\\summer_project\\ghost-ai\\trigger.config.mjs.map": "Zh3YdkCGzdc",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\Desktop\\summer_project\\ghost-ai\\trigger\\example.mjs": "Ifi2ZzOXvz4",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\Desktop\\summer_project\\ghost-ai\\trigger\\example.mjs.map": "MViziKVJvvI",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-6QNHNWKW.mjs": "4s58d5n+I7o",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-6QNHNWKW.mjs.map": "Y/+dsNc51PA",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-AQK3LUTL.mjs": "oTUF+qTYkdU",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-AQK3LUTL.mjs.map": "q7HHjiIX4Ms",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-CEGEFIIW.mjs": "XTqnaKCt0CY",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-CEGEFIIW.mjs.map": "PUF4XWPqW4k",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-DD4SMPPZ.mjs": "s1Tg8smA/9I",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-DD4SMPPZ.mjs.map": "tYEJWAhS9oQ",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-NNMIXW2T.mjs": "FbJ6ISlAv8w",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-NNMIXW2T.mjs.map": "APa1kl8bXAU",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-NSCLCOXB.mjs": "oprkskR82c8",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-NSCLCOXB.mjs.map": "QugJRsApGqE",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-W3IIWYRQ.mjs": "Wz337SVxRl4",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\chunk-W3IIWYRQ.mjs.map": "LMPzUuAiOIM",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\crypto.node-HQU4YM27.mjs": "ojodzBi7fF4",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\crypto.node-HQU4YM27.mjs.map": "0b4tlwmkM3g",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\crypto.node-SZRERSH4.mjs": "ufA+r6+wUSQ",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\crypto.node-SZRERSH4.mjs.map": "CR4+ROUCPXo",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\esm-FBB3BYPS.mjs": "hVD49RBOaK0",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\esm-FBB3BYPS.mjs.map": "n/kSTyRRA5k",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\esm-LEMCBP2N.mjs": "i+VxEFJAv/s",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\esm-LEMCBP2N.mjs.map": "CSvtQ8IwLEk",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\getMachineId-bsd-T5CKPH6Y.mjs": "f2XKwSzdSVQ",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\getMachineId-bsd-T5CKPH6Y.mjs.map": "XvZilzXzAWQ",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\getMachineId-darwin-XVPAIY65.mjs": "mLhCHTq04zs",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\getMachineId-darwin-XVPAIY65.mjs.map": "+l9HpwKMf8s",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\getMachineId-linux-KAUBDQOH.mjs": "l/YzOH26wvY",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\getMachineId-linux-KAUBDQOH.mjs.map": "Gc9QJnrLqMA",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\getMachineId-unsupported-UEXNEMRJ.mjs": "XskVFZMP2j0",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\getMachineId-unsupported-UEXNEMRJ.mjs.map": "aOBtG4CZ894",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\getMachineId-win-ICJSZ3SE.mjs": "YDaTrpvMNaA",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\getMachineId-win-ICJSZ3SE.mjs.map": "RrzV8FonRfQ",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\s2s-Z4IGBFJF.mjs": "/2UVm2+2q0k",
+    "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\s2s-Z4IGBFJF.mjs.map": "OnS5h0vcgfI"
+  },
+  "outputPath": "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj",
+  "packageVersion": "4.4.6",
+  "runWorkerEntryPoint": "C:\\Users\\ANUSHKA SINGH\\Desktop\\summer_project\\ghost-ai\\.trigger\\tmp\\build-s3CGlj\\AppData\\Local\\npm-cache\\_npx\\f51a09bd0abf5f10\\node_modules\\trigger.dev\\dist\\esm\\entryPoints\\dev-run-worker.mjs",
+  "runtime": "node",
+  "sources": {
+    "package.json": {
+      "contentHash": "6e10409629d6773c679ced5014c36875",
+      "contents": "eJyNVM1u4yAYvOcpkM8FG8dNmpx62OeIROCrw4aABdhJVPXdV2Bs0yhV92Zmhvl+8ecKoUKzCxR7VLQn4zxmsngJ6ADWSaMDURFKqhHtrByYD3Jve4iQ41Z23hV79LlCCKFCwBBuabh5FL5fRvjYSyVmYjwlynlm/UyNp0QpqSMDLn4l1FvZtmD3U6juhhIUI64Q+oq5CehAC9BcQpbg+5E5wL0sLTAe3Q+UNIRO7u9cgT2XIZm/LtJbsibrB7qX6eYuu6nkAEdl+NmVXEkYcz+sCf1BpI2AXyRLkr9o8Icy1/8SptQfZJ2V7sJKJljnweKuTaW/peFnmqy2TTBZepPGQAQMpRPnIGlIQzazYADLQZVHZY7xfk2azP92D0Xkg6kJrUg9CbhizuGBWck0B8x6fzJW+nvUVmS7lMOVu6UAdEGF8aCH0XlLmsVY9VwKwPlG0CyxsAsBphtSL8WkFr2RulqkswXdkZo032AszOUHah4epYTShXQnJnh8hoeGbJcwnkl1lVrgC9h22qHXjL9ipuWFecDcuXnJq/xxDH+ev4/JmztXdsb5yaBZxnzvINveunpgnnYmcVmPd8+oqUkZnV5/AB8wzI3+kC3+YUBxXZ/saVbh98p82pqG1DRrZsgu/uci+RqbuPr6B0M6X4g="
+    },
+    "trigger.config.ts": {
+      "contentHash": "9f06388d3e96b33914e452d37d819423",
+      "contents": "eJxlTk1Lw0AQvQfyH8ZcqhDSaMDD9qK0sUQQJeQmUmJ2Nqxmd8PuJBRK/rtkGyriZWZ4H/OeVL2xBCfgKKTGrdFCtjCBsEZB9EBWti3ahOO4dvx7PWbRJgzCAI/exlHUQ0d/zNenMADorfnChth8NOhcgnpMqrLY7/Py8Fa+Pufb6lDmT1fxrLaDJqmQwUobjiuPcWkdg/doqRB9eFTVx91ga5JGM8ju0/TsR7ISHQOfDYC6/uyQF3qHIwNRdw7jM7M0vij9x0ciVD05Bll8gaWupEIzUKFfHIPbdMlaPP/IX1bUDRnL4G5BJr/nOd1sfgDia2u0"
+    },
+    "trigger/example.ts": {
+      "contentHash": "0253881797c78a4e3193ac9df3a64568",
+      "contents": "eJxljsGKwjAURfeF/sOlzKKCU/cRZT5hFn5AQ/MMxSYp78VBCfl3SVRm4fbed859s1sDRyRELRdknDk4dD+RZ2uJB0N/OzGXbt82bUO3ejsFLxF0025d6FSwQ6X71DbAbBS6V/ld4m5bYr56BS13P6Ff9X0J2igkeO1IQSLP3iJvcDiiWlBXwkLDEmw/nv7feQ8Xoy/UOTC+0ss5FGEeN/unhCle2SPBkYi2pDD+cphIhMwHhFypvG2bXAQPL/9czQ=="
+    },
+    "tsconfig.json": {
+      "contentHash": "02fc19ad21338c2ab820a70136310db4",
+      "contents": "eJxtUU1Lw0AQvedXLHMMbaJehJ4E6cFiEfRYimyyQ7t2v9id1EjJf5fdJNVET8O892b2vdlLxhjUVjup0L84ktYEWLFLxhhjQNwfkGDFYP12d3N7D4seV7KCFduBsBoWLJZCEnpeKYw9BoMtwX5Qc6Xs5yauJd/gAIaTdM+yejxifZox5GVNU8zYtZYzDMPWikbhkyH01k1JnajofDAzwV8xWNXEsFFRNUYo9KPER/KMm2DNdtzya7MMVnFC0XOzVB+hjRs98pqWsRmHTO1RoyGupgNONQeZTr5LABtO36fmOkVIAQa4S3U8reN0/PkvxuChzNPPFGUO+2wc6KI8mlCNwOtbae8SzbkQBYXRap6X+d/2mqSIQyV9OQzlTNpTAs//06nVFGKS5B+wvRoCYwW+6+Gm+6zLvgEbXbUJ"
+    }
+  },
+  "target": "dev"
+}

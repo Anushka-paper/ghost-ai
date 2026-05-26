@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 interface CanvasControlBarProps {
   canUndo: boolean;
   canRedo: boolean;
+  saveStatus: 'idle' | 'saving' | 'saved' | 'error';
   onZoomOut: () => void;
   onFitView: () => void;
   onZoomIn: () => void;
@@ -16,6 +17,7 @@ interface CanvasControlBarProps {
 export function CanvasControlBar({
   canUndo,
   canRedo,
+  saveStatus,
   onZoomOut,
   onFitView,
   onZoomIn,
@@ -26,7 +28,7 @@ export function CanvasControlBar({
     'h-9 w-9 p-0 text-copy-secondary hover:bg-subtle hover:text-copy-primary disabled:pointer-events-none disabled:opacity-35';
 
   return (
-    <div className="absolute bottom-24 left-6 z-20">
+    <div className="absolute bottom-6 left-6 z-20">
       <div className="flex items-center gap-1 rounded-full border border-surface-border bg-surface/95 px-2 py-1.5 shadow-2xl shadow-base/60 backdrop-blur">
         <div className="flex items-center gap-1">
           <Button
@@ -89,6 +91,12 @@ export function CanvasControlBar({
           >
             <Redo2 className="h-4 w-4" />
           </Button>
+        </div>
+        <div className="ml-2 flex items-center rounded-full bg-surface px-2 py-1 text-xs font-medium text-copy-muted">
+          {saveStatus === 'saving' && 'Saving…'}
+          {saveStatus === 'saved' && 'Saved'}
+          {saveStatus === 'error' && 'Save failed'}
+          {saveStatus === 'idle' && 'Autosave idle'}
         </div>
       </div>
     </div>

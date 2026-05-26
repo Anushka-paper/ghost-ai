@@ -4,11 +4,11 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Canvas ergonomics implemented. The canvas now has a bottom-left floating control bar for zoom, fit view, undo, and redo, with matching keyboard shortcuts that skip editable fields. Next: add persistence logic.
+- Collaborative canvas presence implemented. The workspace canvas now shows live collaborator avatars in the top-right of the canvas area and broadcasts cursor position through Liveblocks presence.
 
 ## Current Goal
 
-- Implement the collaborative canvas feature using Liveblocks.
+- Continue building collaborative canvas productivity features.
 
 ## Completed
 
@@ -150,6 +150,7 @@ Update this file whenever the current phase, active feature, or implementation s
     - Proper error handling and status codes.
   - Installed `@liveblocks/node` for server-side operations.
   - `npm run build`, `npm run lint`, and `npx tsc --noEmit` all pass successfully.
+  - Added live collaborator avatars and cursor presence rendering inside the workspace canvas view.
 - Edge behavior from `context/feature-specs/16-edge-behavior.md`:
   - Added subtle top, right, bottom, and left connection handles to every canvas node.
   - Added typed canvas edge data for collaborative inline labels.
@@ -180,13 +181,29 @@ Update this file whenever the current phase, active feature, or implementation s
   - Connected the modal's `onImport` callback down to the canvas to clear the existing node/edge states and render the new template using `useLiveblocksFlow`.
   - `npm.cmd run build` passes.
 
+- AI sidebar from `context/feature-specs/20-ai-sidebar-shell.md`:
+  - Separated AI sidebar into `components/editor/ai-sidebar.tsx` and wired it into `components/editor/workspace-shell.tsx`.
+  - Preserves floating slide-in placement, border, background, and shadow styling from the existing placeholder.
+  - Implements tabbed layout (`AI Architect`, `Specs`), empty-state starter chips, chat input UI (Enter to send, Shift+Enter newline), and a demo spec card.
+  - UI-only: no backend or Liveblocks integration added.
+  - `npx.cmd tsc --noEmit` passes after implementation.
+
+- Canvas autosave from `context/feature-specs/21-canvas-autosave.md`:
+  - Added `@vercel/blob` dependency for blob storage.
+  - Added `PUT /api/projects/[projectId]/canvas` to upload the latest canvas JSON to Vercel Blob and persist the returned blob URL to Prisma.
+  - Added `GET /api/projects/[projectId]/canvas` to load a saved project canvas from Vercel Blob when the room is empty.
+  - Added `hooks/useCanvasAutosave.ts` to debounce autosaves and surface saving/saved/error state.
+  - Updated canvas logic to load saved state only when the Liveblocks room is empty.
+  - Added a save status indicator to the canvas control bar.
+  - `npm.cmd run build` passes after implementation.
+
 ## In Progress
 
 - None.
 
 ## Next Up
 
-- Add persistence logic for canvas state to Liveblocks storage.
+- None.
 
 ## Open Questions
 
