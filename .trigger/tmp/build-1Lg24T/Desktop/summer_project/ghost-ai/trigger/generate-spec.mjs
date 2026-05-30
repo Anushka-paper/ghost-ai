@@ -21159,7 +21159,7 @@ Please write the complete technical specification in detailed Markdown.
       const markdownOutput = response.text;
       console.log("Spec generation completed successfully.");
       await updateStatus("Saving specification...");
-      const { prisma } = await import("../../../../prisma-E6ESA422.mjs");
+      const { prisma } = await import("../../../../prisma-VVMEXUE5.mjs");
       const specRecord = await prisma.projectSpec.create({
         data: {
           projectId,

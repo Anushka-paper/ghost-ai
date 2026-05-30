@@ -1,6 +1,6 @@
 import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '@/app/generated/prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
@@ -14,9 +14,8 @@ const prismaClientSingleton = () => {
     process.exit(1);
   }
 
-  // The pool was being passed into PrismaPg directly in v6, but in v7 the PrismaPg adapter expects
-  // a config object. The finding notes to fix this: `new PrismaPg({ connectionString })`
-  const adapter = new PrismaPg({ connectionString });
+  const pool = new Pool({ connectionString });
+  const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
 };
 
