@@ -9,12 +9,19 @@ import { NODE_COLORS } from "@/types/canvas";
 export const designAgent = task({
   id: "design-agent",
   run: async (payload: { prompt: string; roomId: string; projectId: string; userId: string }) => {
-    console.log("Design agent triggered with payload:", payload);
     const { prompt, roomId } = payload;
-    const liveblocks = getLiveblocks();
+    console.log(`Design agent triggered for room: ${roomId.slice(0, 8)}... Prompt length: ${prompt.length}`);
+    
+    let liveblocks: any;
+    try {
+      liveblocks = getLiveblocks();
+    } catch (err) {
+      console.warn("Failed to initialize Liveblocks client. Proceeding without Liveblocks.", err);
+    }
 
     const updateStatus = async (statusText: string) => {
       metadata.set("status", statusText);
+      if (!liveblocks) return;
       try {
         await liveblocks.createFeedMessage({
           roomId,
@@ -27,23 +34,25 @@ export const designAgent = task({
     };
 
     // 1. Initialize AI presence (cursor at center-ish, isThinking = true)
-    try {
-      await liveblocks.setPresence(roomId, {
-        userId: "ghost-ai",
-        data: {
-          cursor: { x: 200, y: 200 },
-          isThinking: true,
-        },
-        userInfo: {
-          id: "ghost-ai",
-          name: "Ghost AI",
-          avatar: "https://avatar.vercel.sh/ghost-ai",
-          cursorColor: "#6457f9",
-        },
-        ttl: 180,
-      });
-    } catch (err) {
-      console.warn("Failed to set initial AI presence:", err);
+    if (liveblocks) {
+      try {
+        await liveblocks.setPresence(roomId, {
+          userId: "ghost-ai",
+          data: {
+            cursor: { x: 200, y: 200 },
+            isThinking: true,
+          },
+          userInfo: {
+            id: "ghost-ai",
+            name: "Ghost AI",
+            avatar: "https://avatar.vercel.sh/ghost-ai",
+            cursorColor: "#6457f9",
+          },
+          ttl: 180,
+        });
+      } catch (err) {
+        console.warn("Failed to set initial AI presence:", err);
+      }
     }
 
     await updateStatus("Analyzing prompt...");
@@ -52,17 +61,21 @@ export const designAgent = task({
       // 2. Fetch current canvas state to provide context
       let currentNodes: any[] = [];
       let currentEdges: any[] = [];
-      try {
-        const storage = await liveblocks.getStorageDocument(roomId, "json");
-        const canvasState = (storage as any)?.canvas_state;
-        if (canvasState) {
-          const rawNodes = canvasState.nodes ?? {};
-          const rawEdges = canvasState.edges ?? {};
-          currentNodes = Array.isArray(rawNodes) ? rawNodes : Object.values(rawNodes);
-          currentEdges = Array.isArray(rawEdges) ? rawEdges : Object.values(rawEdges);
+      let initialVersion: string | null = null;
+      if (liveblocks) {
+        try {
+          const storage = await liveblocks.getStorageDocument(roomId, "json");
+          const canvasState = (storage as any)?.canvas_state;
+          if (canvasState) {
+            initialVersion = canvasState.version || null;
+            const rawNodes = canvasState.nodes ?? {};
+            const rawEdges = canvasState.edges ?? {};
+            currentNodes = Array.isArray(rawNodes) ? rawNodes : Object.values(rawNodes);
+            currentEdges = Array.isArray(rawEdges) ? rawEdges : Object.values(rawEdges);
+          }
+        } catch (err) {
+          console.warn("Failed to fetch storage document (may be empty room):", err);
         }
-      } catch (err) {
-        console.warn("Failed to fetch storage document (may be empty room):", err);
       }
 
       // 3. Initialize Gemini client
@@ -109,6 +122,7 @@ Modify, add, delete, or rearrange nodes and edges to satisfy the user's prompt.`
 
       // Helper function to update pointer presence dynamically during tool execution
       const updatePointer = async (x: number, y: number) => {
+        if (!liveblocks) return;
         try {
           await liveblocks.setPresence(roomId, {
             userId: "ghost-ai",
@@ -326,76 +340,84 @@ Modify, add, delete, or rearrange nodes and edges to satisfy the user's prompt.`
       await updateStatus("Drawing nodes and edges...");
 
       // 5. Apply the nodes and edges to Liveblocks Storage
-      await liveblocks.mutateStorage(roomId, ({ root }) => {
-        let canvasState = (root as any).get("canvas_state");
-        if (!canvasState) {
-          canvasState = new LiveObject({
-            nodes: new LiveMap(),
-            edges: new LiveMap(),
-          });
-          (root as any).set("canvas_state", canvasState);
-        }
+      if (liveblocks) {
+        await liveblocks.mutateStorage(roomId, ({ root }: any) => {
+          let canvasState = root.get("canvas_state");
+          if (!canvasState) {
+            canvasState = new LiveObject({
+              nodes: new LiveMap(),
+              edges: new LiveMap(),
+              version: "0",
+            });
+            root.set("canvas_state", canvasState);
+          }
+          
+          const currentVersion = canvasState.get("version") || null;
+          if (initialVersion !== null && currentVersion !== initialVersion) {
+            console.warn("Stale canvas state version. Aborting mutate.");
+            return;
+          }
+          canvasState.set("version", Date.now().toString());
 
-        const liveNodes = canvasState.get("nodes") as LiveMap<string, any>;
-        const liveEdges = canvasState.get("edges") as LiveMap<string, any>;
+          const liveNodes = canvasState.get("nodes") as LiveMap<string, any>;
+          const liveEdges = canvasState.get("edges") as LiveMap<string, any>;
 
-        // Clear LiveMap nodes
-        for (const key of Array.from(liveNodes.keys())) {
-          liveNodes.delete(key);
-        }
-        for (const n of workingNodes) {
-          liveNodes.set(
-            n.id,
-            new LiveObject({
-              id: n.id,
-              type: "canvasNode",
-              position: { x: n.position.x, y: n.position.y },
-              style: new LiveObject({ width: n.style.width, height: n.style.height }),
-              data: new LiveObject({
-                label: n.data.label,
-                shape: n.data.shape,
-                color: n.data.color,
-                textColor: n.data.textColor,
-              }),
-            })
-          );
-        }
+          // Merge nodes
+          const workingNodeIds = new Set(workingNodes.map(n => n.id));
+          for (const key of Array.from(liveNodes.keys())) {
+            if (!workingNodeIds.has(key)) liveNodes.delete(key);
+          }
+          for (const n of workingNodes) {
+            liveNodes.set(
+              n.id,
+              new LiveObject({
+                id: n.id,
+                type: "canvasNode",
+                position: { x: n.position.x, y: n.position.y },
+                style: new LiveObject({ width: n.style.width, height: n.style.height }),
+                data: new LiveObject({
+                  label: n.data.label,
+                  shape: n.data.shape,
+                  color: n.data.color,
+                  textColor: n.data.textColor,
+                }),
+              })
+            );
+          }
 
-        // Clear LiveMap edges
-        for (const key of Array.from(liveEdges.keys())) {
-          liveEdges.delete(key);
-        }
-        for (const e of workingEdges) {
-          liveEdges.set(
-            e.id,
-            new LiveObject({
-              id: e.id,
-              type: "canvasEdge",
-              source: e.source,
-              target: e.target,
-              data: new LiveObject({
-                label: e.data?.label || "",
-              }),
-              markerEnd: {
-                type: "arrowclosed",
-                color: "var(--text-secondary)",
-              },
-            })
-          );
-        }
-      });
+          // Merge edges
+          const workingEdgeIds = new Set(workingEdges.map(e => e.id));
+          for (const key of Array.from(liveEdges.keys())) {
+            if (!workingEdgeIds.has(key)) liveEdges.delete(key);
+          }
+          for (const e of workingEdges) {
+            liveEdges.set(
+              e.id,
+              new LiveObject({
+                id: e.id,
+                type: "canvasEdge",
+                source: e.source,
+                target: e.target,
+                data: new LiveObject({
+                  label: e.data?.label || "",
+                }),
+                markerEnd: {
+                  type: "arrowclosed",
+                  color: "var(--text-secondary)",
+                },
+              })
+            );
+          }
+        });
+      }
 
-      // Move cursor to center of drawn nodes as final presence step
-      if (workingNodes.length > 0) {
-        const sumX = workingNodes.reduce((acc, n) => acc + n.position.x, 0);
-        const sumY = workingNodes.reduce((acc, n) => acc + n.position.y, 0);
-        const avgX = sumX / workingNodes.length;
-        const avgY = sumY / workingNodes.length;
+      // Clear AI presence unconditionally on success
+      if (liveblocks) {
         try {
           await liveblocks.setPresence(roomId, {
             userId: "ghost-ai",
             data: {
-              cursor: { x: avgX, y: avgY },
+              cursor: null,
               isThinking: false,
             },
             userInfo: {
@@ -418,23 +440,25 @@ Modify, add, delete, or rearrange nodes and edges to satisfy the user's prompt.`
       await updateStatus(`Failed: ${err.message}`);
 
       // Clear AI presence thinking on failure
-      try {
-        await liveblocks.setPresence(roomId, {
-          userId: "ghost-ai",
-          data: {
-            cursor: { x: 200, y: 200 },
-            isThinking: false,
-          },
-          userInfo: {
-            id: "ghost-ai",
-            name: "Ghost AI",
-            avatar: "https://avatar.vercel.sh/ghost-ai",
-            cursorColor: "#6457f9",
-          },
-          ttl: 10,
-        });
-      } catch (presenceErr) {
-        console.warn("Failed to clear AI presence on error:", presenceErr);
+      if (liveblocks) {
+        try {
+          await liveblocks.setPresence(roomId, {
+            userId: "ghost-ai",
+            data: {
+              cursor: null,
+              isThinking: false,
+            },
+            userInfo: {
+              id: "ghost-ai",
+              name: "Ghost AI",
+              avatar: "https://avatar.vercel.sh/ghost-ai",
+              cursorColor: "#6457f9",
+            },
+            ttl: 10,
+          });
+        } catch (presenceErr) {
+          console.warn("Failed to clear AI presence on error:", presenceErr);
+        }
       }
 
       return { success: false, error: err.message };
