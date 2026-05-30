@@ -2,8 +2,6 @@
 
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
-  LiveblocksProvider,
-  RoomProvider,
   ClientSideSuspense,
   useCanRedo,
   useCanUndo,
@@ -11,7 +9,9 @@ import {
   useUndo,
   useMyPresence,
   useOthers,
+  useSelf,
 } from '@liveblocks/react';
+import { Loader2 } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import { useLiveblocksFlow } from '@liveblocks/react-flow';
 import {
@@ -54,8 +54,8 @@ type CanvasShape = CanvasNodeData['shape'];
 
 type LiveblocksOther = {
   connectionId: string | number;
+  id?: string;
   info?: {
-    id?: string;
     name?: string;
     avatar?: string;
     cursorColor?: string;
@@ -63,6 +63,17 @@ type LiveblocksOther = {
   presence?: {
     cursor: { x: number; y: number } | null;
     isThinking: boolean;
+    thinking?: boolean;
+  };
+};
+
+type LiveblocksUser = {
+  connectionId: string | number;
+  id?: string;
+  info?: {
+    name?: string;
+    avatar?: string;
+    cursorColor?: string;
   };
 };
 
@@ -122,36 +133,37 @@ function getInitials(name: string) {
 function CanvasPresencePanel() {
   const { user } = useUser();
   const currentUserId = user?.id;
+  const self = useSelf() as unknown as LiveblocksUser | null;
   const others = useOthers() as unknown as readonly LiveblocksOther[];
   const collaborators = others.filter(
-    (other) => other.info?.id && other.info.id !== currentUserId
+    (other) => other.id && other.id !== currentUserId
   );
 
-  const visibleCollaborators = collaborators.slice(0, 5);
-  const overflowCount = Math.max(0, collaborators.length - 5);
-  const hasCollaborators = visibleCollaborators.length > 0;
+  const stackUsers = [
+    ...(self ? [{ ...self, isSelf: true }] : []),
+    ...collaborators.map((other) => ({ ...other, isSelf: false })),
+  ];
+  const visibleUsers = stackUsers.slice(0, 5);
+  const overflowCount = Math.max(0, stackUsers.length - 5);
+  const hasCollaborators = collaborators.length > 0;
 
   return (
     <div className="absolute right-4 top-4 z-40 pointer-events-none flex items-center gap-2 rounded-full border border-surface-border bg-surface/95 px-2 py-1 shadow-2xl shadow-base/30 backdrop-blur-sm">
-      {visibleCollaborators.map((other, index) => {
-        const userInfo = other.info as {
-          id?: string;
-          name?: string;
-          avatar?: string;
-        } | undefined;
-        const name = userInfo?.name || other.info?.id || 'Guest';
+      {visibleUsers.map((presenceUser, index) => {
+        const name = presenceUser.info?.name || presenceUser.id || 'Guest';
 
         return (
           <div
-            key={other.connectionId}
+            key={`${presenceUser.isSelf ? 'self' : 'other'}-${presenceUser.connectionId}`}
+            title={presenceUser.isSelf ? `${name} (you)` : name}
             className={`relative h-9 w-9 overflow-hidden rounded-full border border-surface-border bg-surface text-xs font-semibold text-copy-primary ${
               index !== 0 ? '-ml-2' : ''
             }`}
             style={{ zIndex: 10 - index }}
           >
-            {userInfo?.avatar ? (
+            {presenceUser.info?.avatar ? (
               <img
-                src={userInfo.avatar}
+                src={presenceUser.info.avatar}
                 alt={name}
                 className="h-full w-full object-cover"
               />
@@ -159,6 +171,9 @@ function CanvasPresencePanel() {
               <span className="flex h-full w-full items-center justify-center bg-surface text-copy-primary">
                 {getInitials(name)}
               </span>
+            )}
+            {presenceUser.isSelf && (
+              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border border-surface bg-brand" />
             )}
           </div>
         );
@@ -266,7 +281,7 @@ function CanvasFlowInner({
   const currentUserId = user?.id;
   const others = useOthers() as unknown as readonly LiveblocksOther[];
   const collaborators = others.filter(
-    (other) => other.info?.id && other.info.id !== currentUserId
+    (other) => other.id && other.id !== currentUserId
   );
   const [isDraggingOver, setIsDraggingOver] = useState(false);
   const nodeCounterRef = useRef<Record<CanvasShape, number>>({
@@ -652,19 +667,16 @@ function CanvasFlowInner({
       <CanvasPresencePanel />
 
       {collaborators.map((other) => {
-        const userInfo = other.info as {
-          id?: string;
-          name?: string;
-          avatar?: string;
-          cursorColor?: string;
-        } | undefined;
+        const userInfo = other.info;
 
-        if (!other.presence?.cursor || !userInfo?.id) {
+        if (!other.presence?.cursor || !other.id) {
           return null;
         }
 
         const cursorX = other.presence.cursor.x * viewport.zoom + viewport.x;
         const cursorY = other.presence.cursor.y * viewport.zoom + viewport.y;
+
+        const isThinking = other.presence?.isThinking || other.presence?.thinking;
 
         return (
           <div
@@ -679,13 +691,14 @@ function CanvasFlowInner({
             <div className="flex items-center gap-2 rounded-full bg-surface/95 px-2 py-1 text-xs font-medium text-copy-primary shadow-lg shadow-black/10">
               <span
                 className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: userInfo.cursorColor || '#4ECDC4' }}
+                style={{ backgroundColor: userInfo?.cursorColor || '#4ECDC4' }}
               />
-              <span>{userInfo.name || 'Guest'}</span>
+              <span>{userInfo?.name || 'Guest'}</span>
+              {isThinking && <Loader2 className="h-3 w-3 animate-spin text-accent" />}
             </div>
             <div
               className="mx-auto mt-1 h-2 w-2 rounded-full"
-              style={{ backgroundColor: userInfo.cursorColor || '#4ECDC4' }}
+              style={{ backgroundColor: userInfo?.cursorColor || '#4ECDC4' }}
             />
           </div>
         );
@@ -777,25 +790,13 @@ export function Canvas({
   onSaveStatusChange,
 }: CanvasProps) {
   return (
-    <LiveblocksProvider authEndpoint="/api/liveblocks-auth" throttle={16}>
-      <RoomProvider
-        id={roomId}
-        initialPresence={{
-          cursor: null,
-          isThinking: false,
-        }}
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        initialStorage={{} as any}
-      >
-        <ClientSideSuspense fallback={<CanvasLoading />}>
-          <CanvasContent
-            roomId={roomId}
-            isTemplateModalOpen={isTemplateModalOpen}
-            onCloseTemplateModal={onCloseTemplateModal}
-            onSaveStatusChange={onSaveStatusChange}
-          />
-        </ClientSideSuspense>
-      </RoomProvider>
-    </LiveblocksProvider>
+    <ClientSideSuspense fallback={<CanvasLoading />}>
+      <CanvasContent
+        roomId={roomId}
+        isTemplateModalOpen={isTemplateModalOpen}
+        onCloseTemplateModal={onCloseTemplateModal}
+        onSaveStatusChange={onSaveStatusChange}
+      />
+    </ClientSideSuspense>
   );
 }

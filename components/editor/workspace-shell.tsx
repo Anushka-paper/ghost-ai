@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { LiveblocksProvider, RoomProvider } from '@liveblocks/react';
 import { Share2, MessageSquare, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -27,7 +28,7 @@ interface WorkspaceShellProps {
   sharedProjects: Project[];
 }
 
-export function WorkspaceShell({
+function WorkspaceShellInner({
   projectId,
   projectName,
   isOwner,
@@ -90,7 +91,7 @@ export function WorkspaceShell({
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-xl"
+            className={`rounded-xl transition-colors ${isAiSidebarOpen ? "bg-subtle text-brand" : ""}`}
             onClick={() => setIsAiSidebarOpen((isOpen) => !isOpen)}
             title="Toggle AI sidebar"
           >
@@ -123,7 +124,7 @@ export function WorkspaceShell({
           />
         </div>
 
-        <AiSidebar isOpen={isAiSidebarOpen} onClose={() => setIsAiSidebarOpen(false)} />
+        <AiSidebar isOpen={isAiSidebarOpen} onClose={() => setIsAiSidebarOpen(false)} projectId={projectId} />
       </main>
 
       {/* Project Dialogs */}
@@ -148,5 +149,23 @@ export function WorkspaceShell({
         isOwner={isOwner}
       />
     </div>
+  );
+}
+
+export function WorkspaceShell(props: WorkspaceShellProps) {
+  return (
+    <LiveblocksProvider authEndpoint="/api/liveblocks-auth" throttle={16}>
+      <RoomProvider
+        id={props.projectId}
+        initialPresence={{
+          cursor: null,
+          isThinking: false,
+        }}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        initialStorage={{} as any}
+      >
+        <WorkspaceShellInner {...props} />
+      </RoomProvider>
+    </LiveblocksProvider>
   );
 }

@@ -6,6 +6,7 @@ declare global {
     Presence: {
       cursor: { x: number; y: number } | null;
       isThinking: boolean;
+      thinking?: boolean;
     };
 
     // The Storage tree for the room, for useMutation, useStorage, etc.
@@ -20,6 +21,7 @@ declare global {
     UserMeta: {
       id: string;
       info: {
+        id?: string;
         name: string;
         avatar: string;
         cursorColor: string;
