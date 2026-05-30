@@ -127,24 +127,28 @@ export function CanvasNode({ id, data, isConnecting, selected }: CanvasNodeProps
         className={HANDLE_CLASS}
         type="target"
         position={Position.Top}
+        isConnectable={true}
       />
       <Handle
         id="right-target"
         className={HANDLE_CLASS}
         type="target"
         position={Position.Right}
+        isConnectable={true}
       />
       <Handle
         id="bottom-target"
         className={HANDLE_CLASS}
         type="target"
         position={Position.Bottom}
+        isConnectable={true}
       />
       <Handle
         id="left-target"
         className={HANDLE_CLASS}
         type="target"
         position={Position.Left}
+        isConnectable={true}
       />
       {isEditing ? (
         <div className="absolute inset-0 z-10 flex items-center justify-center px-4 py-3">
@@ -202,24 +206,28 @@ export function CanvasNode({ id, data, isConnecting, selected }: CanvasNodeProps
         className={HANDLE_CLASS}
         type="source"
         position={Position.Top}
+        isConnectable={true}
       />
       <Handle
         id="right-source"
         className={HANDLE_CLASS}
         type="source"
         position={Position.Right}
+        isConnectable={true}
       />
       <Handle
         id="bottom-source"
         className={HANDLE_CLASS}
         type="source"
         position={Position.Bottom}
+        isConnectable={true}
       />
       <Handle
         id="left-source"
         className={HANDLE_CLASS}
         type="source"
         position={Position.Left}
+        isConnectable={true}
       />
     </div>
   );

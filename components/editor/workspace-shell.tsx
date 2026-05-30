@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { LiveblocksProvider, RoomProvider } from '@liveblocks/react';
 import { Share2, MessageSquare, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,9 @@ import { ProjectSidebar } from '@/components/editor/project-sidebar';
 import { ProjectDialogs } from '@/components/editor/project-dialogs';
 import { ShareDialog } from '@/components/editor/share-dialog';
 import { Canvas } from '@/components/editor/canvas';
+import { AiSidebar } from '@/components/editor/ai-sidebar';
 import { useProjectActions } from '@/hooks/useProjectActions';
+import type { CanvasSaveStatus } from '@/hooks/useCanvasAutosave';
 
 interface Project {
   id: string;
@@ -25,7 +28,7 @@ interface WorkspaceShellProps {
   sharedProjects: Project[];
 }
 
-export function WorkspaceShell({
+function WorkspaceShellInner({
   projectId,
   projectName,
   isOwner,
@@ -36,7 +39,12 @@ export function WorkspaceShell({
   const [isAiSidebarOpen, setIsAiSidebarOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<CanvasSaveStatus>('idle');
   const projectActions = useProjectActions();
+
+  const handleSaveStatusChange = (status: CanvasSaveStatus) => {
+    setSaveStatus(status);
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-base text-copy-primary">
@@ -66,28 +74,28 @@ export function WorkspaceShell({
           <Button
             variant="ghost"
             size="sm"
-            className="h-9 px-3 text-xs font-medium"
+            className="rounded-xl px-4 text-xs font-medium"
             onClick={() => setIsTemplateModalOpen(true)}
           >
             Templates
           </Button>
           <Button
             variant="ghost"
-            size="sm"
-            className="h-9 w-9 p-0"
+            size="icon"
+            className="rounded-xl"
             onClick={() => setIsShareDialogOpen(true)}
             title="Share project"
           >
-            <Share2 className="h-5 w-5" />
+            <Share2 className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
-            size="sm"
-            className="h-9 w-9 p-0"
+            size="icon"
+            className={`rounded-xl transition-colors ${isAiSidebarOpen ? "bg-subtle text-brand" : ""}`}
             onClick={() => setIsAiSidebarOpen((isOpen) => !isOpen)}
             title="Toggle AI sidebar"
           >
-            <MessageSquare className="h-5 w-5" />
+            <MessageSquare className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -108,24 +116,15 @@ export function WorkspaceShell({
 
         {/* Canvas Area */}
         <div className="absolute inset-0">
-          <Canvas 
-            roomId={projectId} 
-            isTemplateModalOpen={isTemplateModalOpen} 
-            onCloseTemplateModal={() => setIsTemplateModalOpen(false)} 
+          <Canvas
+            roomId={projectId}
+            isTemplateModalOpen={isTemplateModalOpen}
+            onCloseTemplateModal={() => setIsTemplateModalOpen(false)}
+            onSaveStatusChange={handleSaveStatusChange}
           />
         </div>
 
-        {/* AI Sidebar Placeholder */}
-        <aside
-          aria-hidden={!isAiSidebarOpen}
-          className={`fixed right-3 top-17 z-40 flex h-[calc(100vh-5rem)] w-80 max-w-[calc(100vw-1.5rem)] flex-col rounded-2xl border border-surface-border bg-surface/95 p-4 shadow-2xl shadow-base/60 backdrop-blur transition-transform duration-200 ease-out ${
-            isAiSidebarOpen ? 'translate-x-0' : 'translate-x-[calc(100%+1.5rem)]'
-          }`}
-        >
-          <div className="flex h-full items-center justify-center">
-            <p className="text-sm text-copy-muted">AI sidebar coming soon</p>
-          </div>
-        </aside>
+        <AiSidebar isOpen={isAiSidebarOpen} onClose={() => setIsAiSidebarOpen(false)} projectId={projectId} />
       </main>
 
       {/* Project Dialogs */}
@@ -150,5 +149,23 @@ export function WorkspaceShell({
         isOwner={isOwner}
       />
     </div>
+  );
+}
+
+export function WorkspaceShell(props: WorkspaceShellProps) {
+  return (
+    <LiveblocksProvider authEndpoint="/api/liveblocks-auth" throttle={16}>
+      <RoomProvider
+        id={props.projectId}
+        initialPresence={{
+          cursor: null,
+          isThinking: false,
+        }}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        initialStorage={{} as any}
+      >
+        <WorkspaceShellInner {...props} />
+      </RoomProvider>
+    </LiveblocksProvider>
   );
 }

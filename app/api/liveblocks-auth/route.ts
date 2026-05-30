@@ -59,12 +59,21 @@ export async function POST(req: NextRequest) {
       // Room might already exist, that's fine
     });
 
+    // Ensure the room-scoped feeds are created
+    await Promise.allSettled([
+      liveblocks.createFeed({ roomId, feedId: 'ai-status-feed' }),
+      liveblocks.createFeed({ roomId, feedId: 'ai-chat' }),
+    ]).catch((err) => {
+      console.warn('Failed to initialize Liveblocks feeds:', err);
+    });
+
     // Generate cursor color for this user
     const cursorColor = getUserCursorColor(userId);
 
     // Create and return a session token with user metadata
     const session = liveblocks.prepareSession(userId, {
       userInfo: {
+        id: userId,
         name: displayName,
         avatar: avatarUrl,
         cursorColor,

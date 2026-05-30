@@ -4,14 +4,14 @@ import { Button } from '@/components/ui/button';
 
 export function AccessDenied() {
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-ghost-900">
+    <div className="flex h-screen w-screen items-center justify-center bg-base text-copy-primary">
       <div className="flex flex-col items-center gap-6 text-center">
-        <Lock className="h-16 w-16 text-ghost-400" />
+        <Lock className="h-16 w-16 text-copy-muted" />
         <div>
-          <h1 className="text-2xl font-semibold text-ghost-50">
+          <h1 className="text-2xl font-semibold text-copy-primary">
             Access Denied
           </h1>
-          <p className="mt-2 text-sm text-ghost-300">
+          <p className="mt-2 text-sm text-copy-muted">
             You don&apos;t have permission to view this project.
           </p>
         </div>

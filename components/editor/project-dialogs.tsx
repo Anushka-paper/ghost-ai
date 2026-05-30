@@ -71,6 +71,7 @@ export function ProjectDialogs({
                 value={formName}
                 onChange={(e) => onNameChange(e.target.value)}
                 disabled={isLoading}
+                className="text-copy-primary placeholder:text-copy-muted"
                 autoFocus
 
               />
@@ -127,6 +128,7 @@ export function ProjectDialogs({
                 value={formName}
                 onChange={(e) => onNameChange(e.target.value)}
                 disabled={isLoading}
+                className="text-copy-primary placeholder:text-copy-muted"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && formName.trim()) {

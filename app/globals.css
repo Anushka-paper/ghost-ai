@@ -95,7 +95,7 @@
   --popover: var(--bg-elevated);
   --popover-foreground: var(--text-primary);
   --primary: var(--accent-primary);
-  --primary-foreground: var(--bg-base);
+  --primary-foreground: var(--text-primary);
   --secondary: var(--bg-subtle);
   --secondary-foreground: var(--text-primary);
   --muted: var(--bg-subtle);
@@ -133,6 +133,44 @@
 
   body {
     @apply bg-base text-copy-primary;
+  }
+
+  input,
+  textarea,
+  select {
+    color: var(--text-primary);
+    -webkit-text-fill-color: var(--text-primary);
+    caret-color: var(--accent-primary);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-muted);
+    opacity: 1;
+  }
+
+  input:disabled,
+  textarea:disabled,
+  select:disabled {
+    color: var(--text-muted);
+    -webkit-text-fill-color: var(--text-muted);
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--text-primary);
+    caret-color: var(--accent-primary);
+    box-shadow: 0 0 0 1000px var(--bg-elevated) inset;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  ::selection {
+    background-color: var(--accent-primary-dim);
+    color: var(--text-primary);
   }
 }
 

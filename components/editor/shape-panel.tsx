@@ -110,7 +110,10 @@ export function ShapePanel({ onShapeDragStart }: ShapePanelProps) {
     size: ShapeSize
   ) => {
     isDraggingRef.current = true;
-    const shapeData = JSON.stringify({ shape, size });
+    const rect = e.currentTarget.getBoundingClientRect();
+    const offsetX = Math.round(e.clientX - rect.left);
+    const offsetY = Math.round(e.clientY - rect.top);
+    const shapeData = JSON.stringify({ shape, size, offsetX, offsetY });
     e.dataTransfer.setData('application/json', shapeData);
     e.dataTransfer.setData('text/plain', shapeData);
     e.dataTransfer.effectAllowed = 'move';

@@ -4,14 +4,28 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Current Phase
 
-- Canvas ergonomics implemented. The canvas now has a bottom-left floating control bar for zoom, fit view, undo, and redo, with matching keyboard shortcuts that skip editable fields. Next: add persistence logic.
+- Collaborative canvas presence implemented. The workspace canvas now shows live collaborator avatars in the top-right of the canvas area and broadcasts cursor position through Liveblocks presence.
 
 ## Current Goal
 
-- Implement the collaborative canvas feature using Liveblocks.
+- Continue building collaborative canvas productivity features.
 
 ## Completed
 
+- Chat UI refinement:
+  - Widened and repositioned the AI sidebar overlay for a roomier chat layout.
+  - Improved the AI Architect tab empty state, prompt suggestion buttons, message bubble spacing, metadata, and multiline message rendering.
+  - Reworked the chat composer into a framed input bar with an icon-only send action, compact helper text, and clearer generation status styling.
+  - Added automatic scrolling to the newest chat message and replaced raw markdown preview accent colors with Ghost AI theme tokens.
+- Dark theme font color fix:
+  - Added global dark-theme foreground, placeholder, caret, disabled, selection, and autofill color rules for form controls.
+  - Changed the primary foreground token from page background to primary text so primary actions no longer render black labels on dark UI surfaces.
+  - Replaced stale `ghost-*` colors in the access denied screen with Ghost AI theme tokens.
+  - Forced WebKit text-fill for form controls and tightened project dialog inputs and spec preview markdown selectors where black text still leaked through.
+- Liveblocks presence fix:
+  - Updated canvas presence rendering to use Liveblocks' top-level user ID instead of expecting an ID inside `userInfo`, so connected collaborators are no longer filtered out.
+  - Added the current user's Liveblocks self record to the avatar stack with a visible "you" indicator.
+  - Included the Clerk user ID in Liveblocks `userInfo` as a compatibility fallback for older presence code paths.
 - Design system and UI primitive setup from `context/feature-specs/01-design-system.md`:
   - Installed and configured `shadcn/ui`.
   - Added Button, Card, Dialog, Input, Tabs, Textarea, and ScrollArea primitives.
@@ -150,6 +164,7 @@ Update this file whenever the current phase, active feature, or implementation s
     - Proper error handling and status codes.
   - Installed `@liveblocks/node` for server-side operations.
   - `npm run build`, `npm run lint`, and `npx tsc --noEmit` all pass successfully.
+  - Added live collaborator avatars and cursor presence rendering inside the workspace canvas view.
 - Edge behavior from `context/feature-specs/16-edge-behavior.md`:
   - Added subtle top, right, bottom, and left connection handles to every canvas node.
   - Added typed canvas edge data for collaborative inline labels.
@@ -180,13 +195,92 @@ Update this file whenever the current phase, active feature, or implementation s
   - Connected the modal's `onImport` callback down to the canvas to clear the existing node/edge states and render the new template using `useLiveblocksFlow`.
   - `npm.cmd run build` passes.
 
+- AI sidebar from `context/feature-specs/20-ai-sidebar-shell.md`:
+  - Separated AI sidebar into `components/editor/ai-sidebar.tsx` and wired it into `components/editor/workspace-shell.tsx`.
+  - Preserves floating slide-in placement, border, background, and shadow styling from the existing placeholder.
+  - Implements tabbed layout (`AI Architect`, `Specs`), empty-state starter chips, chat input UI (Enter to send, Shift+Enter newline), and a demo spec card.
+  - UI-only: no backend or Liveblocks integration added.
+  - `npx.cmd tsc --noEmit` passes after implementation.
+
+- Canvas autosave from `context/feature-specs/21-canvas-autosave.md`:
+  - Added `@vercel/blob` dependency for blob storage.
+  - Added `PUT /api/projects/[projectId]/canvas` to upload the latest canvas JSON to Vercel Blob and persist the returned blob URL to Prisma.
+  - Added `GET /api/projects/[projectId]/canvas` to load a saved project canvas from Vercel Blob when the room is empty.
+  - Added `hooks/useCanvasAutosave.ts` to debounce autosaves and surface saving/saved/error state.
+  - Updated canvas logic to load saved state only when the Liveblocks room is empty.
+  - Added a save status indicator to the canvas control bar.
+  - `npm.cmd run build` passes after implementation.
+
+- Design agent API from `context/feature-specs/22-design-agent-api.md`:
+  - Added Prisma `TaskRun` model with `runId`, `projectId`, `userId`, `createdAt`, and required indexes.
+  - Created `POST /api/ai/design` to accept `prompt`, `roomId`, and `projectId`, verify access, trigger the Trigger.dev `design-agent` task, and persist a `TaskRun` record.
+  - Created `POST /api/ai/design/token` to verify run ownership and return a Trigger.dev public token scoped to the run.
+  - Added `trigger/design-agent.ts` exporting a minimal Trigger.dev task that logs the payload and returns a placeholder response (no AI logic yet).
+  - Backend-only wiring: does not generate nodes, call AI providers, or update the canvas yet.
+- Design agent logic from `context/feature-specs/23-design-agent-logic.md`:
+  - Updated `components/editor/workspace-shell.tsx` to pass the `projectId` down to the `AiSidebar`.
+  - Implemented the triggering and real-time subscription of the Trigger.dev run inside `components/editor/ai-sidebar.tsx` using `useRealtimeRun` from `@trigger.dev/react-hooks`.
+  - Refactored the design agent background task in `trigger/design-agent.ts` to use a multi-step tool-calling approach via `generateText` and `gemini-2.5-flash` with 7 custom canvas tools (`addNode`, `moveNode`, `resizeNode`, `updateNodeData`, `deleteNode`, `addEdge`, `deleteEdge`). This replaces the experimental `generateObject` API and fixes schema/serialization runtime errors.
+  - Handled updating the virtual AI collaborator's presence state (`isThinking: true`, cursor positioning) inside the Liveblocks room during drawing, moving the pointer dynamically as tools execute.
+  - Fixed `TypeError: currentNodes is not iterable` by mapping fetched `LiveMap` storage objects to arrays before performing operations.
+  - Updated the database/storage mutation to correctly use and clear `LiveMap` instances, writing node and edge items using nested `LiveObject` values.
+  - Ensured safe cleanup of presence state in both success and failure execution branches, resolving `setPresence` 422 errors by passing structured `userInfo` and non-null `cursor` values with a valid TTL.
+  - Added robust API error recovery and retry strategy: increased model invocation `maxRetries` to 5 and implemented automatic fallback to `gemini-2.0-flash` when `gemini-2.5-flash` encounters 503 Service Unavailable / 429 Rate Limit "high demand" errors.
+  - Confirmed both TypeScript checks (`npx tsc --noEmit`) and Next.js builds (`npm run build`) compile successfully with zero errors.
+- Shared AI activity indicators and status feed from `context/feature-specs/24-ai-presence-state.md`:
+  - Created `types/tasks.ts` defining `aiStatusFeedPayloadSchema` and a type-safe `validateAiStatusMessage` helper.
+  - Added support for `thinking` and `isThinking` presence properties in `liveblocks.config.ts`.
+  - Relocated Liveblocks providers (`LiveblocksProvider` and `RoomProvider`) to `components/editor/workspace-shell.tsx` to enable room presence and feed access for all workspace sibling components (like `<AiSidebar>`).
+  - Added cursor badge thinking indicators inside `<Canvas>` that display a spinning Loader icon when collaborators broadcast `isThinking` or `thinking` state.
+  - Implemented real-time subscription to `ai-status-feed` inside `<AiSidebar>` using `useFeedMessages`.
+  - Disabled sidebar chat textarea input and send button, displaying active loading spinner and dynamic, validated feed status messages when generation is active.
+  - Updated background `design-agent` task inside `trigger/design-agent.ts` to push real-time status updates directly to `ai-status-feed` using `liveblocks.createFeedMessage`.
+  - Both TypeScript checks and production bundle builds pass successfully.
+- Real-time room chat inside AI sidebar from `context/feature-specs/25-sidebar-chat-feed.md`:
+  - Created `aiChatMessagePayloadSchema` and a type-safe `validateAiChatMessage` helper in `types/tasks.ts` to enforce `sender`, `role`, `content`, and `timestamp` schema verification.
+  - Subscribed to room-scoped `ai-chat` feed in `<AiSidebar>` using `useFeedMessages`.
+  - Processed and rendered feed messages in chronological order displaying sender name, formatted local timestamp, and message content.
+  - Linked input textarea and send button to publish new messages directly to the `ai-chat` feed using `useCreateFeedMessage`.
+  - Cleared inputs on success, and displayed a premium red error banner when feed message publication fails.
+  - Verified compilation via typechecks and Next.js production builds.
+- Design agent frontend integration from `context/feature-specs/26-design-agent-frontend.md`:
+  - Updated submit handler to post users' prompts to `ai-chat` feed and call `/api/ai/design` and `/api/ai/design/token` to initiate design agent execution and retrieve scoped public tokens.
+  - Linked task execution to `@trigger.dev/react-hooks`'s `useRealtimeRun` to monitor active run states.
+  - Added run-conclusion `useEffect` observer to post final AI status outcome messages (success or failure error messages) to the `ai-chat` feed and clean up active run state.
+  - Applied premium green accent color styling (`#62C073`) to user chat bubble backgrounds and send buttons.
+  - Added compact, themed status strip (`bg-elevated/60 border-[#62C073]/20 text-[#62C073]`) above the input field to display active task status messages.
+  - Verified compilation via typechecks and Next.js production builds.
+- Current issue fixes from `context/current-issues.md`:
+  - Resolved `Feed ai-chat not found` console error on room load by calling `liveblocks.createFeed` for both `ai-status-feed` and `ai-chat` feeds during authorization in `app/api/liveblocks-auth/route.ts`.
+  - Resolved `Failed to trigger design agent` by importing the `designAgent` task type in `app/api/ai/design/route.ts` and updating `tasks.trigger` with type registration (`tasks.trigger<typeof designAgent>`).
+- Spec generation flow backend from `context/feature-specs/27-spec-generation-flow.md`:
+  - Created API route `POST /api/ai/spec` to validate inputs, verify user project access via `checkProjectAccess`, trigger the `generate-spec` task, and store a `TaskRun` record in the database.
+  - Created API route `POST /api/ai/spec/token` to verify `TaskRun` ownership and generate a Trigger.dev public access token scoped to the run with a 1 hour expiration limit.
+  - Implemented the background task `generateSpec` in `trigger/generate-spec.ts` to validate payload parameters via Zod, use Gemini (`gemini-2.5-flash` with fallback to `gemini-2.0-flash` on rate limits) to generate Markdown technical specifications, update real-time progress status/metadata, and return the Markdown output.
+  - Verified compilation via TypeScript typecheck and Next.js production builds.
+- Spec persistence and secure download flow from `context/feature-specs/28-spec-persistence-download.md`:
+  - Added `ProjectSpec` model to the Prisma schema and successfully ran migrations to update PostgreSQL.
+  - Updated the background task `generateSpec` in `trigger/generate-spec.ts` to insert a database record via Prisma and upload the generated raw Markdown content to Vercel Blob with private (`access: 'private'`) authorization.
+  - Created API route `GET /api/projects/[projectId]/specs/[specId]/download` to fetch technical specs from Vercel Blob and serve them as downloadable attachments, enforcing authentication and workspace member access checks.
+  - Verified compilation via TypeScript typecheck and Next.js production builds.
+- Spec UI integration from `context/feature-specs/29-spec-ui-integration.md`:
+  - Created API route `GET /api/projects/[projectId]/specs` to query `ProjectSpec` database records and return technical specification list metadata.
+  - Subscribed to current canvas nodes and edges directly in `<AiSidebar>` using Liveblocks `useStorage` hook.
+  - Implemented technical spec list fetching on mount, tab switches, and successful task runs in the sidebar Specs tab.
+  - Wired the "Generate Spec" action to post user messages to the chat feed, invoke the backend spec creation task, retrieve scoped public tokens, and monitor task completion in real-time.
+  - Integrated a preview modal dialog using shadcn/ui `Dialog` and `ScrollArea` primitives, utilizing a secure custom Markdown-to-HTML parser to style headers, lists, bold text, and code blocks matching the workspace theme.
+  - Fixed preview dialog width (`sm:max-w-2xl` override) and text contrast/visibility issues for Dialog Title, Description, markdown headers, and bold texts inside the preview popup.
+  - Replaced the custom regex-based parser with a robust line-by-line state machine parser that handles consecutive text grouping, headers, bullet list items (`-`, `*`), numbered list items (`1.`, etc.), code blocks, inline code, and bold markdown tags correctly.
+  - Wired direct browser downloads for spec files.
+  - Verified compilation via TypeScript typecheck and Next.js production builds.
+
 ## In Progress
 
 - None.
 
 ## Next Up
 
-- Add persistence logic for canvas state to Liveblocks storage.
+- None.
 
 ## Open Questions
 
@@ -199,6 +293,8 @@ Update this file whenever the current phase, active feature, or implementation s
 
 ## Session Notes
 
+- Refined the AI sidebar chat UI in `components/editor/ai-sidebar.tsx`; focused lint for the file passes, while full typecheck is currently blocked by existing `trigger/generate-spec.ts` errors.
+- Fixed dark theme font color leakage for inputs, textareas, autofill states, primary action labels, and the access denied screen.
 - `npm.cmd run lint` passes.
 - `npx.cmd tsc --noEmit` passes.
 - `npm.cmd run build` passes when network access is available for `next/font` Google font fetching.
@@ -307,3 +403,8 @@ Update this file whenever the current phase, active feature, or implementation s
   - `npx.cmd tsc --noEmit`, `npm.cmd run lint`, and `npm.cmd run build` pass.
 - Implemented `context/feature-specs/16-edge-behavior.md`; typecheck, lint, and production build pass. Lint still reports the pre-existing `share-dialog.tsx` `<img>` warning.
 - Implemented `context/feature-specs/17-canvas-ergonomics.md`; typecheck, lint, and production build pass. Lint still reports the pre-existing `share-dialog.tsx` `<img>` warning.
+- Resolved all issues in `context/current-issues.md`:
+  - Initialized required room feeds (`ai-status-feed` and `ai-chat`) in the backend auth route.
+  - Enabled type-safe and registered Trigger.dev task execution with `tasks.trigger<typeof designAgent>`.
+  - Generated and applied Prisma database migration `20260527082128_add_task_run` to create the missing `TaskRun` table in PostgreSQL.
+  - Verified compilation with `npx tsc --noEmit` and production build with `npm run build` passing cleanly.
