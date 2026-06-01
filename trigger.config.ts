@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { defineConfig } from "@trigger.dev/sdk";
 import { syncEnvVars } from "@trigger.dev/build/extensions/core";
+import { prismaExtension } from "@trigger.dev/build/extensions/prisma";
 
 const envVars = [
   "DATABASE_URL",
@@ -28,6 +29,9 @@ export default defineConfig({
   },
   build: {
     extensions: [
+      prismaExtension({
+        schema: "prisma/schema.prisma",
+      }),
       syncEnvVars(async () =>
         envVars
           .filter((name) => process.env[name] !== undefined)
