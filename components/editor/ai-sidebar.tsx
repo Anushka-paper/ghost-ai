@@ -632,7 +632,7 @@ export function AiSidebar({ isOpen, onClose, projectId }: AiSidebarProps) {
                           <span>{formattedTime}</span>
                         </div>
                         <div
-                          className={`whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed shadow-sm break-words ${
+                          className={`whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed shadow-sm wrap-break-words ${
                             m.role === "user"
                               ? "rounded-br-md bg-brand text-primary-foreground"
                               : "rounded-bl-md border border-surface-border bg-elevated text-copy-primary"
@@ -795,7 +795,7 @@ export function AiSidebar({ isOpen, onClose, projectId }: AiSidebarProps) {
     <Dialog open={!!selectedSpec} onOpenChange={(open) => { if (!open) setSelectedSpec(null); }}>
       <DialogContent className="sm:max-w-2xl w-full h-[80vh] flex flex-col p-6 rounded-3xl bg-surface/95 border border-surface-border shadow-2xl backdrop-blur">
         <DialogHeader className="flex-none">
-          <DialogTitle className="text-base font-semibold text-copy-primary">
+          <DialogTitle className=" font-semibold text-copy-primary">
             {selectedSpec ? `spec-${selectedSpec.id.substring(0, 8)}.md` : "Specification Preview"}
           </DialogTitle>
           <DialogDescription className="text-xs text-copy-muted">
