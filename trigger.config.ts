@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import "dotenv/config";
 import { defineConfig } from "@trigger.dev/sdk";
 import { syncEnvVars } from "@trigger.dev/build/extensions/core";
@@ -11,6 +12,9 @@ const envVars = [
   "BLOB_READ_WRITE_TOKEN",
   "GOOGLE_AI_API_KEY",
 ];
+=======
+import { defineConfig } from "@trigger.dev/sdk";
+>>>>>>> 04cea573ea74164a4bb5978e48b115061a565e0b
 
 export default defineConfig({
   project: process.env.TRIGGER_PROJECT_REF!,
